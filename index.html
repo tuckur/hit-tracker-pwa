@@ -29,6 +29,7 @@
 <!-- Fonts -->
 <link href="https://api.fontshare.com/v2/css?f[]=general-sans@400,500,600,700&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&display=swap" rel="stylesheet">
 
 <!-- Tailwind CSS Play CDN -->
 <script src="https://cdn.tailwindcss.com"></script>
@@ -40,6 +41,7 @@ tailwind.config = {
       fontFamily: {
         sans: ['"General Sans"', 'system-ui', 'sans-serif'],
         mono: ['"JetBrains Mono"', 'monospace'],
+        display: ['"Oswald"', 'sans-serif'],
       },
       colors: {
         bg: { DEFAULT: '#0a0a0a', card: '#141414', hover: '#1a1a1a', light: '#f5f5f5', 'card-light': '#ffffff' },
@@ -47,6 +49,7 @@ tailwind.config = {
         crimson: { DEFAULT: '#c42b2b', dark: '#a01f1f', light: '#e04444' },
         muted: '#888',
         'muted-light': '#666',
+        gold: '#d4a017',
       },
     },
   },
@@ -56,55 +59,190 @@ tailwind.config = {
 <style>
   * { -webkit-tap-highlight-color: transparent; box-sizing: border-box; }
   html, body { margin: 0; padding: 0; font-family: 'General Sans', system-ui, sans-serif; overscroll-behavior-y: none; }
-  body { background: #0a0a0a; color: #e5e5e5; min-height: 100dvh; }
+  body {
+    background: #0a0a0a;
+    color: #e5e5e5;
+    min-height: 100dvh;
+  }
   body.light-mode { background: #f5f5f5; color: #1a1a1a; }
-  
+
+  /* CSS grid wireframe background — Dorian Yates Training Journal aesthetic */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    background-image:
+      linear-gradient(rgba(196,43,43,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(196,43,43,0.04) 1px, transparent 1px);
+    background-size: 40px 40px;
+  }
+  body.light-mode::before {
+    background-image:
+      linear-gradient(rgba(196,43,43,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(196,43,43,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+  }
+
   .font-mono { font-family: 'JetBrains Mono', monospace; }
-  
+  .font-display { font-family: 'Oswald', sans-serif; }
+
   /* Scrollbar */
   ::-webkit-scrollbar { width: 0; height: 0; }
-  
+
   /* Page transitions */
   .page { animation: fadeIn 0.2s ease-out; }
   @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
-  
+
   /* Pulse for active timer */
   @keyframes pulse-ring { 0% { box-shadow: 0 0 0 0 rgba(196,43,43,0.4); } 70% { box-shadow: 0 0 0 8px rgba(196,43,43,0); } 100% { box-shadow: 0 0 0 0 rgba(196,43,43,0); } }
   .pulse-ring { animation: pulse-ring 2s infinite; }
-  
+
+  /* Pulsing crimson glow for rest timer */
+  @keyframes rest-pulse {
+    0%, 100% { box-shadow: 0 0 20px rgba(196,43,43,0.3), 0 0 60px rgba(196,43,43,0.1); border-color: rgba(196,43,43,0.5); }
+    50% { box-shadow: 0 0 40px rgba(196,43,43,0.6), 0 0 100px rgba(196,43,43,0.2); border-color: rgba(196,43,43,0.9); }
+  }
+  .rest-pulse { animation: rest-pulse 2s ease-in-out infinite; }
+
   /* Touch targets */
   button, a, input, select, textarea { touch-action: manipulation; }
   input, textarea, select { font-size: 16px !important; }
-  
+
   /* Safe area */
   .safe-bottom { padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 80px); }
-  
+
   /* Card hover */
   .card-touch:active { transform: scale(0.98); transition: transform 0.1s; }
-  
+
+  /* Left border accent cards — journal-entry feel */
+  .card-accent { border-left: 3px solid #c42b2b; }
+  .card-accent-gold { border-left: 3px solid #d4a017; }
+  .card-accent-yellow { border-left: 3px solid #eab308; }
+
   /* Chat bubbles */
   .chat-bot { border-radius: 2px 16px 16px 16px; }
   .chat-user { border-radius: 16px 2px 16px 16px; }
-  
-  /* Rest timer overlay */
+
+  /* Rest timer overlay with wireframe grid */
   .rest-overlay { backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
-  
+  .rest-overlay::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background-image:
+      linear-gradient(rgba(196,43,43,0.06) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(196,43,43,0.06) 1px, transparent 1px);
+    background-size: 40px 40px;
+  }
+
+  /* Black bar style for day headers — matches journal cover "TRAINING JOURNAL" bar */
+  .day-bar {
+    background: #000;
+    padding: 10px 16px;
+    font-family: 'Oswald', sans-serif;
+    font-weight: 700;
+    font-size: 14px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: #fff;
+  }
+
+  /* Dorian Says quote rotator — styled like a journal excerpt */
+  .quote-block {
+    border-left: 3px solid #c42b2b;
+    padding: 12px 16px;
+    font-style: italic;
+    position: relative;
+  }
+  .quote-block::before {
+    content: '\201C';
+    font-family: 'Oswald', sans-serif;
+    font-size: 48px;
+    color: rgba(196,43,43,0.3);
+    position: absolute;
+    top: -6px;
+    left: 8px;
+    line-height: 1;
+  }
+
+  /* Section headers — condensed bold */
+  .section-header {
+    font-family: 'Oswald', sans-serif;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-size: 12px;
+  }
+
+  /* Header branding — journal cover inspired */
+  .brand-tagline {
+    font-family: 'Oswald', sans-serif;
+    font-weight: 500;
+    font-size: 7px;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: #888;
+    margin-bottom: 2px;
+  }
+  .brand-title {
+    font-family: 'Oswald', sans-serif;
+    font-weight: 700;
+    font-size: 28px;
+    letter-spacing: -0.02em;
+    line-height: 0.95;
+    color: #fff;
+    text-transform: uppercase;
+  }
+  .brand-bar {
+    display: inline-block;
+    background: #000;
+    padding: 3px 12px;
+    margin-top: 3px;
+  }
+  .brand-bar span {
+    font-family: 'Oswald', sans-serif;
+    font-weight: 600;
+    font-size: 11px;
+    letter-spacing: 0.35em;
+    color: #fff;
+    text-transform: uppercase;
+  }
+
+  /* Stat numbers — larger, bolder, more impactful */
+  .stat-number {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 2.25rem;
+    font-weight: 800;
+    line-height: 1;
+    color: #c42b2b;
+  }
+
   /* Light mode overrides */
   body.light-mode .card-bg { background: #ffffff; border-color: #e5e5e5; }
   body.light-mode .nav-bg { background: rgba(245,245,245,0.92); border-color: #e5e5e5; }
   body.light-mode .text-muted-adaptive { color: #666; }
   body.light-mode .input-bg { background: #f0f0f0; border-color: #ddd; color: #1a1a1a; }
   body.light-mode .header-bg { background: rgba(245,245,245,0.85); }
+  body.light-mode .day-bar { background: #1a1a1a; }
+  body.light-mode .brand-title { color: #1a1a1a; }
+  body.light-mode .brand-tagline { color: #666; }
+  body.light-mode .brand-bar { background: #1a1a1a; }
 </style>
 </head>
 <body>
 
-<div id="app" class="max-w-[480px] mx-auto relative min-h-[100dvh]">
-  <!-- Header -->
-  <header id="header" class="header-bg sticky top-0 z-40 px-4 pt-3 pb-2 flex items-center justify-between" style="background: rgba(10,10,10,0.85); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);">
-    <div>
-      <h1 class="text-[15px] font-bold tracking-tight leading-none">Blood & Guts</h1>
-      <p class="text-[11px] text-muted-adaptive tracking-wide uppercase" style="color:#888;">HIT Tracker</p>
+<div id="app" class="max-w-[480px] mx-auto relative min-h-[100dvh]" style="position: relative; z-index: 1;">
+  <!-- Header — Dorian Yates Training Journal cover inspired -->
+  <header id="header" class="header-bg sticky top-0 z-40 px-4 pt-3 pb-2 flex items-center justify-between" style="background: rgba(10,10,10,0.92); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);">
+    <div class="leading-none">
+      <p class="brand-tagline">Inspired by 6× Mr. Olympia Dorian Yates</p>
+      <h1 class="brand-title">BLOOD &amp; GUTS</h1>
+      <div class="brand-bar">
+        <span>HIT TRACKER</span>
+      </div>
     </div>
     <button id="themeToggle" onclick="toggleTheme()" class="w-10 h-10 flex items-center justify-center rounded-xl" style="background:#141414;" aria-label="Toggle theme">
       <span id="themeIcon">🌙</span>
@@ -115,36 +253,43 @@ tailwind.config = {
   <main id="main" class="px-4 pb-4 safe-bottom"></main>
 
   <!-- Bottom Navigation -->
-  <nav id="bottomNav" class="nav-bg fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[480px] z-50 flex justify-around items-center py-2 border-t" style="background: rgba(10,10,10,0.92); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border-color: #222; padding-bottom: calc(env(safe-area-inset-bottom, 8px) + 8px);">
-    <a href="#/" class="nav-tab flex flex-col items-center gap-0.5 py-1 px-3 min-w-[56px]" data-tab="dashboard">
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
-      <span class="text-[10px] font-medium">Dashboard</span>
-    </a>
-    <a href="#/workout" class="nav-tab flex flex-col items-center gap-0.5 py-1 px-3 min-w-[56px]" data-tab="workout">
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 6.5h11M6.5 17.5h11"/><path d="M3 10h3v4H3zM18 10h3v4h-3z"/><line x1="6" y1="12" x2="18" y2="12"/></svg>
-      <span class="text-[10px] font-medium">Workout</span>
-    </a>
-    <a href="#/coach" class="nav-tab flex flex-col items-center gap-0.5 py-1 px-3 min-w-[56px]" data-tab="coach">
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-      <span class="text-[10px] font-medium">Coach</span>
-    </a>
-    <a href="#/history" class="nav-tab flex flex-col items-center gap-0.5 py-1 px-3 min-w-[56px]" data-tab="history">
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-      <span class="text-[10px] font-medium">History</span>
-    </a>
-    <a href="#/plan" class="nav-tab flex flex-col items-center gap-0.5 py-1 px-3 min-w-[56px]" data-tab="plan">
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-      <span class="text-[10px] font-medium">Plan</span>
-    </a>
+  <nav id="bottomNav" class="nav-bg fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[480px] z-50 border-t" style="background: rgba(10,10,10,0.92); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border-color: #222; padding-bottom: calc(env(safe-area-inset-bottom, 8px) + 8px);">
+    <div class="flex justify-around items-center py-2">
+      <a href="#/" class="nav-tab flex flex-col items-center gap-0.5 py-1 px-3 min-w-[56px]" data-tab="dashboard">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+        <span class="text-[10px] font-medium">Dashboard</span>
+      </a>
+      <a href="#/workout" class="nav-tab flex flex-col items-center gap-0.5 py-1 px-3 min-w-[56px]" data-tab="workout">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 6.5h11M6.5 17.5h11"/><path d="M3 10h3v4H3zM18 10h3v4h-3z"/><line x1="6" y1="12" x2="18" y2="12"/></svg>
+        <span class="text-[10px] font-medium">Workout</span>
+      </a>
+      <a href="#/coach" class="nav-tab flex flex-col items-center gap-0.5 py-1 px-3 min-w-[56px]" data-tab="coach">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        <span class="text-[10px] font-medium">Coach</span>
+      </a>
+      <a href="#/history" class="nav-tab flex flex-col items-center gap-0.5 py-1 px-3 min-w-[56px]" data-tab="history">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        <span class="text-[10px] font-medium">History</span>
+      </a>
+      <a href="#/plan" class="nav-tab flex flex-col items-center gap-0.5 py-1 px-3 min-w-[56px]" data-tab="plan">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+        <span class="text-[10px] font-medium">Plan</span>
+      </a>
+    </div>
+    <div class="text-center pb-1">
+      <a href="https://www.perplexity.ai/computer" target="_blank" rel="noopener noreferrer" class="text-[9px]" style="color:#555; text-decoration:none;">Created with Perplexity Computer</a>
+    </div>
   </nav>
 
-  <!-- Rest Timer Overlay -->
-  <div id="restOverlay" class="rest-overlay fixed inset-0 z-[60] hidden flex-col items-center justify-center" style="background: rgba(10,10,10,0.9);">
-    <div class="text-center">
-      <p class="text-muted text-sm mb-2">REST TIMER</p>
-      <p id="restTime" class="font-mono text-6xl font-bold text-crimson">2:00</p>
-      <p class="text-muted text-sm mt-4 mb-6">Between exercises</p>
-      <button onclick="skipRest()" class="px-8 py-3 bg-crimson text-white font-semibold rounded-xl text-sm">Skip Rest</button>
+  <!-- Rest Timer Overlay — dramatic wireframe grid + pulsing crimson -->
+  <div id="restOverlay" class="rest-overlay fixed inset-0 z-[60] hidden flex-col items-center justify-center" style="background: rgba(10,10,10,0.92);">
+    <div class="text-center relative z-10">
+      <p class="font-display text-sm tracking-[0.3em] mb-4" style="color:#888;">REST TIMER</p>
+      <div class="rest-pulse rounded-2xl border-2 border-crimson/50 p-10 mb-6 inline-block">
+        <p id="restTime" class="font-mono text-8xl font-bold text-crimson leading-none">2:00</p>
+      </div>
+      <p class="text-sm mb-6" style="color:#888;">Between exercises</p>
+      <button onclick="skipRest()" class="px-8 py-3 bg-crimson text-white font-display font-bold rounded-xl text-sm tracking-wider uppercase">Skip Rest</button>
     </div>
   </div>
 </div>
@@ -170,6 +315,19 @@ let workoutTimer = null;
 let workoutElapsed = 0;
 let restTimer = null;
 let restSeconds = 0;
+
+// Dorian Says quotes
+const DORIAN_QUOTES = [
+  "Break into super-intense training. Use forced reps, negatives, burns, and drop sets to gain maximum.",
+  "Good workout. Felt strong.",
+  "One working set to absolute failure. That's where the magic happens.",
+  "Control the negative. That's half the rep most people throw away.",
+  "If you're not failing, you're not training hard enough.",
+  "The mind gives up before the body. Push past it.",
+  "Brief, brutal, and intense. That's the only way to grow.",
+  "Train each body part once per week with maximum intensity.",
+];
+let currentQuoteIndex = 0;
 
 // 26 Exercises
 const SEED_EXERCISES = [
@@ -424,14 +582,14 @@ function getSuggestion(exerciseId, repRange) {
   const last = getLastWorkingSet(exerciseId);
   const exercise = getExerciseById(exerciseId);
   const isBW = exercise && (exercise.equipment === 'Bodyweight' || exercise.equipment === 'Band');
-  
+
   if (!last) {
     return { weight: isBW ? 0 : 20, reps: repRange[0], reasoning: 'First time — start conservative', type: 'new' };
   }
-  
+
   const [minRep, maxRep] = repRange;
   const lastTwo = getLastTwoWorkingSets(exerciseId);
-  
+
   // Check stalled
   if (lastTwo.length >= 2) {
     const sameWeight = lastTwo[0].weight === lastTwo[1].weight || (lastTwo[0].bodyweight && lastTwo[1].bodyweight);
@@ -446,7 +604,7 @@ function getSuggestion(exerciseId, repRange) {
       };
     }
   }
-  
+
   // Hit top of range → increase weight
   if (last.reps >= maxRep) {
     if (isBW) {
@@ -466,7 +624,7 @@ function getSuggestion(exerciseId, repRange) {
       type: 'increase',
     };
   }
-  
+
   // In range → push for +1 rep
   return {
     weight: last.weight,
@@ -602,7 +760,7 @@ function applyTheme() {
   const toggle = document.getElementById('themeToggle');
   toggle.style.background = isDark ? '#141414' : '#e5e5e5';
   const header = document.getElementById('header');
-  header.style.background = isDark ? 'rgba(10,10,10,0.85)' : 'rgba(245,245,245,0.85)';
+  header.style.background = isDark ? 'rgba(10,10,10,0.92)' : 'rgba(245,245,245,0.92)';
   const nav = document.getElementById('bottomNav');
   nav.style.background = isDark ? 'rgba(10,10,10,0.92)' : 'rgba(245,245,245,0.92)';
   nav.style.borderColor = isDark ? '#222' : '#e5e5e5';
@@ -641,7 +799,7 @@ function router() {
   const route = getRoute();
   const main = document.getElementById('main');
   updateNav();
-  
+
   if (route === '/' || route === '') {
     renderDashboard(main);
   } else if (route === '/workout') {
@@ -672,35 +830,47 @@ function renderDashboard(el) {
   const stalledExercises = getStalledExercises();
   const prs = getAllPRs().slice(0, 5);
   const recentSessions = getSessions().sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 3);
-  
+
   const cardBg = isDark ? 'bg-[#141414] border-[#222]' : 'bg-white border-[#e5e5e5]';
   const textMain = isDark ? 'text-white' : 'text-[#1a1a1a]';
   const textMuted = isDark ? 'text-[#888]' : 'text-[#666]';
-  
+
+  // Get current quote
+  const quote = DORIAN_QUOTES[currentQuoteIndex % DORIAN_QUOTES.length];
+
   el.innerHTML = `
-    <div class="page space-y-4 pt-2">
-      <!-- Stats Row -->
-      <div class="grid grid-cols-3 gap-2">
-        <div class="card-touch ${cardBg} border rounded-xl p-3 text-center">
-          <p class="font-mono text-2xl font-bold text-crimson">${weekSessions.length}</p>
-          <p class="text-[10px] ${textMuted} mt-0.5">This Week</p>
-        </div>
-        <div class="card-touch ${cardBg} border rounded-xl p-3 text-center">
-          <p class="font-mono text-2xl font-bold text-crimson">${weekSets}</p>
-          <p class="text-[10px] ${textMuted} mt-0.5">Working Sets</p>
-        </div>
-        <div class="card-touch ${cardBg} border rounded-xl p-3 text-center">
-          <p class="font-mono text-2xl font-bold text-crimson">${totalSessions}</p>
-          <p class="text-[10px] ${textMuted} mt-0.5">Total Sessions</p>
+    <div class="page space-y-4 pt-3">
+      <!-- Dorian Says Quote -->
+      <div class="${cardBg} border rounded-xl overflow-hidden">
+        <div class="quote-block pl-6 pr-4 py-3">
+          <p class="text-[10px] font-display font-600 uppercase tracking-[0.2em] text-crimson mb-1.5" style="position:relative;z-index:1;">Dorian Says</p>
+          <p class="text-[13px] ${textMain} leading-relaxed" style="position:relative;z-index:1;">${quote}</p>
+          <button onclick="nextQuote()" class="text-[10px] ${textMuted} mt-2 block" style="position:relative;z-index:1;">Tap for next &rarr;</button>
         </div>
       </div>
-      
+
+      <!-- Stats Row -->
+      <div class="grid grid-cols-3 gap-2">
+        <div class="card-touch card-accent ${cardBg} border rounded-xl p-3 text-center">
+          <p class="stat-number">${weekSessions.length}</p>
+          <p class="text-[10px] ${textMuted} mt-1 font-display uppercase tracking-wider">This Week</p>
+        </div>
+        <div class="card-touch card-accent ${cardBg} border rounded-xl p-3 text-center">
+          <p class="stat-number">${weekSets}</p>
+          <p class="text-[10px] ${textMuted} mt-1 font-display uppercase tracking-wider">Working Sets</p>
+        </div>
+        <div class="card-touch card-accent ${cardBg} border rounded-xl p-3 text-center">
+          <p class="stat-number">${totalSessions}</p>
+          <p class="text-[10px] ${textMuted} mt-1 font-display uppercase tracking-wider">Total Sessions</p>
+        </div>
+      </div>
+
       <!-- Next Workout CTA -->
       <div class="card-touch bg-crimson rounded-xl p-4 cursor-pointer" onclick="startWorkoutDay('${nextDay.id}')">
         <div class="flex items-center justify-between">
           <div>
-            <p class="text-[10px] text-white/60 uppercase tracking-wider font-medium">Next Workout</p>
-            <p class="text-lg font-bold text-white mt-0.5">Day ${nextDay.day}: ${nextDay.name}</p>
+            <p class="text-[10px] text-white/60 uppercase tracking-wider font-display font-medium">Next Workout</p>
+            <p class="text-lg font-display font-bold text-white mt-0.5 uppercase tracking-wide">Day ${nextDay.day}: ${nextDay.name}</p>
             <p class="text-[12px] text-white/80 mt-1">${nextDay.exercises.length} exercises · ~40 min</p>
           </div>
           <div class="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center">
@@ -708,14 +878,14 @@ function renderDashboard(el) {
           </div>
         </div>
       </div>
-      
+
       <!-- Stall Alerts -->
       ${stalledExercises.length > 0 ? `
         <div>
-          <h2 class="text-xs font-semibold ${textMuted} uppercase tracking-wider mb-2">⚠️ Stall Alerts</h2>
+          <h2 class="section-header ${textMuted} mb-2">⚠️ Stall Alerts</h2>
           <div class="space-y-2">
             ${stalledExercises.map(s => `
-              <div class="${cardBg} border border-yellow-600/30 rounded-xl p-3 flex items-center gap-3">
+              <div class="card-accent-yellow ${cardBg} border border-yellow-600/30 rounded-xl p-3 flex items-center gap-3">
                 <div class="w-8 h-8 rounded-lg bg-yellow-600/20 flex items-center justify-center flex-shrink-0">
                   <span class="text-sm">⚠️</span>
                 </div>
@@ -728,14 +898,14 @@ function renderDashboard(el) {
           </div>
         </div>
       ` : ''}
-      
+
       <!-- Personal Records -->
       ${prs.length > 0 ? `
         <div>
-          <h2 class="text-xs font-semibold ${textMuted} uppercase tracking-wider mb-2">🏆 Personal Records</h2>
+          <h2 class="section-header ${textMuted} mb-2">🏆 Personal Records</h2>
           <div class="space-y-2">
             ${prs.map(pr => `
-              <div class="${cardBg} border rounded-xl p-3 flex items-center justify-between">
+              <div class="card-accent-gold ${cardBg} border rounded-xl p-3 flex items-center justify-between">
                 <div class="min-w-0 flex-1">
                   <p class="text-sm font-medium ${textMain} truncate">${pr.name}</p>
                   <p class="text-xs ${textMuted}">${formatDate(pr.date)}</p>
@@ -748,10 +918,10 @@ function renderDashboard(el) {
           </div>
         </div>
       ` : ''}
-      
+
       <!-- HIT Principles -->
       <div>
-        <h2 class="text-xs font-semibold ${textMuted} uppercase tracking-wider mb-2">💡 HIT Principles</h2>
+        <h2 class="section-header ${textMuted} mb-2">💡 HIT Principles</h2>
         <div class="grid grid-cols-2 gap-2">
           ${[
             { icon: '🔥', title: 'One Set to Failure', desc: 'Maximum intensity, minimum volume' },
@@ -759,7 +929,7 @@ function renderDashboard(el) {
             { icon: '⏱️', title: 'Brief Workouts', desc: '30-45 minutes, no wasted time' },
             { icon: '🔄', title: 'Full Recovery', desc: 'Train each muscle every 5-7 days' },
           ].map(p => `
-            <div class="${cardBg} border rounded-xl p-3">
+            <div class="card-accent ${cardBg} border rounded-xl p-3">
               <span class="text-lg">${p.icon}</span>
               <p class="text-xs font-semibold ${textMain} mt-1">${p.title}</p>
               <p class="text-[10px] ${textMuted} mt-0.5 leading-tight">${p.desc}</p>
@@ -767,19 +937,19 @@ function renderDashboard(el) {
           `).join('')}
         </div>
       </div>
-      
+
       <!-- Recent Sessions -->
       ${recentSessions.length > 0 ? `
         <div>
           <div class="flex items-center justify-between mb-2">
-            <h2 class="text-xs font-semibold ${textMuted} uppercase tracking-wider">Recent Sessions</h2>
+            <h2 class="section-header ${textMuted}">Recent Sessions</h2>
             <a href="#/history" class="text-xs text-crimson font-medium">View All →</a>
           </div>
           <div class="space-y-2">
             ${recentSessions.map(s => {
               const wSets = s.exercises.reduce((n, e) => n + (e.skipped ? 0 : e.sets.filter(st => st.type === 'working').length), 0);
               return `
-                <div class="card-touch ${cardBg} border rounded-xl p-3 cursor-pointer" onclick="navigate('/history/${s.id}')">
+                <div class="card-touch card-accent ${cardBg} border rounded-xl p-3 cursor-pointer" onclick="navigate('/history/${s.id}')">
                   <div class="flex items-center justify-between">
                     <div>
                       <p class="text-sm font-semibold ${textMain}">${s.planDayName}</p>
@@ -797,6 +967,11 @@ function renderDashboard(el) {
   `;
 }
 
+function nextQuote() {
+  currentQuoteIndex = (currentQuoteIndex + 1) % DORIAN_QUOTES.length;
+  renderDashboard(document.getElementById('main'));
+}
+
 // ============================================================
 // WORKOUT PAGE
 // ============================================================
@@ -806,38 +981,38 @@ function renderWorkout(el) {
     renderActiveWorkout(el);
     return;
   }
-  
+
   const plan = getPlan();
   const nextDay = getNextPlanDay();
   const cardBg = isDark ? 'bg-[#141414] border-[#222]' : 'bg-white border-[#e5e5e5]';
   const textMain = isDark ? 'text-white' : 'text-[#1a1a1a]';
   const textMuted = isDark ? 'text-[#888]' : 'text-[#666]';
-  
+
   el.innerHTML = `
-    <div class="page space-y-4 pt-2">
-      <h2 class="text-lg font-bold ${textMain}">Select Training Day</h2>
-      
+    <div class="page space-y-4 pt-3">
+      <h2 class="font-display text-xl font-bold ${textMain} uppercase tracking-wide">Select Training Day</h2>
+
       <div class="space-y-3">
         ${plan.map(day => {
           const isNext = day.id === nextDay.id;
           return `
-            <div class="card-touch ${isNext ? 'bg-crimson/10 border-crimson/30' : cardBg} border rounded-xl p-4 cursor-pointer" onclick="toggleDayPreview('${day.id}')">
+            <div class="card-touch card-accent ${isNext ? 'bg-crimson/10 border-crimson/30' : cardBg} border rounded-xl p-4 cursor-pointer" onclick="toggleDayPreview('${day.id}')">
               <div class="flex items-center justify-between">
                 <div>
                   <div class="flex items-center gap-2">
-                    <p class="text-[15px] font-bold ${textMain}">Day ${day.day}: ${day.name}</p>
+                    <p class="font-display text-[15px] font-bold ${textMain} uppercase tracking-wide">Day ${day.day}: ${day.name}</p>
                     ${isNext ? '<span class="text-[9px] font-bold bg-crimson text-white px-1.5 py-0.5 rounded-full uppercase">Next</span>' : ''}
                   </div>
                   <p class="text-xs ${textMuted} mt-1">${day.exercises.length} exercises · ${day.exercises.reduce((n, e) => n + e.workingSets, 0)} working sets</p>
                 </div>
-                <button onclick="event.stopPropagation(); startWorkoutDay('${day.id}')" class="px-4 py-2 bg-crimson text-white text-xs font-bold rounded-lg min-h-[44px]">
+                <button onclick="event.stopPropagation(); startWorkoutDay('${day.id}')" class="px-4 py-2 bg-crimson text-white text-xs font-display font-bold rounded-lg min-h-[44px] uppercase tracking-wider">
                   Start
                 </button>
               </div>
-              
+
               <!-- Smart Targets Preview -->
               <div id="preview-${day.id}" class="hidden mt-3 pt-3 border-t ${isDark ? 'border-[#333]' : 'border-[#ddd]'}">
-                <p class="text-[10px] ${textMuted} uppercase tracking-wider font-semibold mb-2">Smart Targets</p>
+                <p class="text-[10px] ${textMuted} uppercase tracking-wider font-display font-semibold mb-2">Smart Targets</p>
                 <div class="space-y-1.5">
                   ${day.exercises.map(ex => {
                     const sug = getSuggestion(ex.exerciseId, ex.repRange);
@@ -873,7 +1048,7 @@ function startWorkoutDay(dayId) {
   const plan = getPlan();
   const day = plan.find(d => d.id === dayId);
   if (!day) return;
-  
+
   activeWorkout = {
     planDayId: day.id,
     planDayName: day.name,
@@ -888,7 +1063,7 @@ function startWorkoutDay(dayId) {
     startTime: Date.now(),
     notes: '',
   };
-  
+
   workoutElapsed = 0;
   startWorkoutTimer();
   if (getRoute() === '/workout') {
@@ -925,18 +1100,18 @@ function renderActiveWorkout(el) {
   const textMain = isDark ? 'text-white' : 'text-[#1a1a1a]';
   const textMuted = isDark ? 'text-[#888]' : 'text-[#666]';
   const inputBg = isDark ? 'bg-[#1a1a1a] border-[#333] text-white' : 'bg-[#f0f0f0] border-[#ddd] text-[#1a1a1a]';
-  
+
   if (!current || completed === total) {
     renderWorkoutSummary(el);
     return;
   }
-  
+
   const sug = getSuggestion(current.exerciseId, current.repRange);
   const stalledFlag = isStalled(current.exerciseId);
   const pr = getPR(current.exerciseId);
   const lastWarmups = getLastWarmups(current.exerciseId);
   const planEx = current;
-  
+
   // Auto-populate warmup suggestions
   let warmupSuggestions = [];
   if (planEx.warmupSets > 0) {
@@ -955,13 +1130,13 @@ function renderActiveWorkout(el) {
       }
     }
   }
-  
+
   el.innerHTML = `
     <div class="page space-y-3 pt-1">
       <!-- Timer & Progress Header -->
       <div class="flex items-center justify-between">
         <div>
-          <p class="text-xs ${textMuted}">Day ${w.day}: ${w.planDayName}</p>
+          <p class="text-xs font-display ${textMuted} uppercase tracking-wider">Day ${w.day}: ${w.planDayName}</p>
           <p id="workoutTimerDisplay" class="font-mono text-2xl font-bold text-crimson pulse-ring inline-block rounded-lg px-1">${formatTime(workoutElapsed)}</p>
         </div>
         <div class="text-right">
@@ -971,9 +1146,9 @@ function renderActiveWorkout(el) {
           </div>
         </div>
       </div>
-      
+
       <!-- Current Exercise -->
-      <div class="${cardBg} border rounded-xl p-4">
+      <div class="card-accent ${cardBg} border rounded-xl p-4">
         <div class="flex items-start justify-between mb-2">
           <div>
             <div class="flex items-center gap-2 flex-wrap">
@@ -986,21 +1161,21 @@ function renderActiveWorkout(el) {
           <button onclick="skipExercise()" class="text-xs ${textMuted} px-2 py-1 rounded border ${isDark ? 'border-[#333]' : 'border-[#ddd]'} min-h-[32px]">Skip</button>
         </div>
         ${current.notes ? `<p class="text-[11px] ${textMuted} italic mb-3">${current.notes}</p>` : ''}
-        
+
         <!-- Smart Target Card -->
         <div class="${isDark ? 'bg-crimson/10 border-crimson/20' : 'bg-crimson/5 border-crimson/20'} border rounded-lg p-3 mb-3">
           <div class="flex items-center gap-2 mb-1">
             <span class="text-xs">🎯</span>
-            <span class="text-[10px] font-bold text-crimson uppercase tracking-wider">Smart Target</span>
+            <span class="text-[10px] font-display font-bold text-crimson uppercase tracking-wider">Smart Target</span>
           </div>
           <p class="font-mono text-sm font-bold ${textMain}">${sug.bodyweight ? 'BW' : sug.weight + ' lbs'} × ${sug.reps} reps</p>
           <p class="text-[11px] ${textMuted} mt-0.5">${sug.reasoning}</p>
         </div>
-        
+
         <!-- Warmup Sets -->
         ${planEx.warmupSets > 0 ? `
           <div class="mb-3">
-            <p class="text-[10px] ${textMuted} uppercase tracking-wider font-semibold mb-2">Warmup Sets</p>
+            <p class="text-[10px] ${textMuted} uppercase tracking-wider font-display font-semibold mb-2">Warmup Sets</p>
             ${Array.from({ length: planEx.warmupSets }, (_, i) => {
               const ws = warmupSuggestions[i];
               return `
@@ -1014,10 +1189,10 @@ function renderActiveWorkout(el) {
             }).join('')}
           </div>
         ` : ''}
-        
+
         <!-- Working Set -->
         <div class="mb-3">
-          <p class="text-[10px] ${textMuted} uppercase tracking-wider font-semibold mb-2">Working Set (to failure)</p>
+          <p class="text-[10px] ${textMuted} uppercase tracking-wider font-display font-semibold mb-2">Working Set (to failure)</p>
           <div class="flex items-center gap-2">
             <span class="text-[10px] text-crimson font-bold w-6 flex-shrink-0">WS</span>
             <input type="number" id="ws-weight-0" class="input-bg ${inputBg} border rounded-lg px-3 py-2.5 w-20 text-center font-mono text-sm font-bold" value="${sug.bodyweight ? 0 : sug.weight}" placeholder="lbs">
@@ -1026,20 +1201,20 @@ function renderActiveWorkout(el) {
           </div>
           ${sug.bodyweight ? `<p class="text-[10px] ${textMuted} mt-1 ml-8">Bodyweight — enter 0 for weight</p>` : ''}
         </div>
-        
+
         <!-- Log Button -->
-        <button onclick="logExercise()" class="w-full py-3 bg-crimson text-white font-bold rounded-xl text-sm min-h-[48px] active:bg-crimson/80 transition-colors">
+        <button onclick="logExercise()" class="w-full py-3 bg-crimson text-white font-display font-bold rounded-xl text-sm min-h-[48px] active:bg-crimson/80 transition-colors uppercase tracking-wider">
           Log & Continue →
         </button>
       </div>
-      
+
       <!-- Completed Exercises -->
       ${completed > 0 ? `
         <div>
-          <p class="text-[10px] ${textMuted} uppercase tracking-wider font-semibold mb-2">Completed (${completed})</p>
+          <p class="text-[10px] ${textMuted} uppercase tracking-wider font-display font-semibold mb-2">Completed (${completed})</p>
           <div class="space-y-1.5">
             ${w.exercises.filter(e => e.completed || e.skipped).map(e => `
-              <div class="${cardBg} border rounded-lg p-2.5 flex items-center justify-between">
+              <div class="card-accent ${cardBg} border rounded-lg p-2.5 flex items-center justify-between">
                 <div class="flex items-center gap-2 min-w-0">
                   <span class="${e.skipped ? 'text-yellow-500' : 'text-green-500'} text-xs">${e.skipped ? '⏭️' : '✅'}</span>
                   <span class="text-xs ${textMain} truncate">${getExerciseName(e.exerciseId)}</span>
@@ -1054,13 +1229,13 @@ function renderActiveWorkout(el) {
           </div>
         </div>
       ` : ''}
-      
+
       <!-- Session Notes -->
-      <div class="${cardBg} border rounded-xl p-3">
-        <p class="text-[10px] ${textMuted} uppercase tracking-wider font-semibold mb-1.5">Session Notes</p>
+      <div class="card-accent ${cardBg} border rounded-xl p-3">
+        <p class="text-[10px] ${textMuted} uppercase tracking-wider font-display font-semibold mb-1.5">Session Notes</p>
         <textarea id="sessionNotes" class="input-bg ${inputBg} border rounded-lg w-full p-2.5 text-sm resize-none" rows="2" placeholder="How are you feeling?">${w.notes || ''}</textarea>
       </div>
-      
+
       <!-- Cancel -->
       <button onclick="cancelWorkout()" class="w-full py-2 text-xs ${textMuted} text-center">Cancel Workout</button>
     </div>
@@ -1071,7 +1246,7 @@ function logExercise() {
   const current = activeWorkout.exercises[activeWorkout.currentExerciseIndex];
   const planEx = current;
   const sets = [];
-  
+
   // Gather warmup sets
   for (let i = 0; i < planEx.warmupSets; i++) {
     const wEl = document.getElementById(`wu-weight-${i}`);
@@ -1080,7 +1255,7 @@ function logExercise() {
       sets.push({ type: 'warmup', weight: parseFloat(wEl.value) || 0, reps: parseInt(rEl.value) || 0 });
     }
   }
-  
+
   // Gather working set
   const wsW = document.getElementById('ws-weight-0');
   const wsR = document.getElementById('ws-reps-0');
@@ -1097,14 +1272,14 @@ function logExercise() {
       });
     }
   }
-  
+
   // Save notes
   const notesEl = document.getElementById('sessionNotes');
   if (notesEl) activeWorkout.notes = notesEl.value;
-  
+
   current.sets = sets;
   current.completed = true;
-  
+
   // Move to next
   const nextIdx = activeWorkout.exercises.findIndex((e, i) => i > activeWorkout.currentExerciseIndex && !e.completed && !e.skipped);
   if (nextIdx >= 0) {
@@ -1114,7 +1289,7 @@ function logExercise() {
   } else {
     activeWorkout.currentExerciseIndex = activeWorkout.exercises.length;
   }
-  
+
   renderActiveWorkout(document.getElementById('main'));
 }
 
@@ -1122,14 +1297,14 @@ function skipExercise() {
   const current = activeWorkout.exercises[activeWorkout.currentExerciseIndex];
   current.skipped = true;
   current.sets = [];
-  
+
   const nextIdx = activeWorkout.exercises.findIndex((e, i) => i > activeWorkout.currentExerciseIndex && !e.completed && !e.skipped);
   if (nextIdx >= 0) {
     activeWorkout.currentExerciseIndex = nextIdx;
   } else {
     activeWorkout.currentExerciseIndex = activeWorkout.exercises.length;
   }
-  
+
   renderActiveWorkout(document.getElementById('main'));
 }
 
@@ -1138,9 +1313,9 @@ function showRestTimer(seconds) {
   const overlay = document.getElementById('restOverlay');
   overlay.classList.remove('hidden');
   overlay.style.display = 'flex';
-  
+
   updateRestDisplay();
-  
+
   restTimer = setInterval(() => {
     restSeconds--;
     if (restSeconds <= 0) {
@@ -1183,18 +1358,18 @@ function renderWorkoutSummary(el) {
   const cardBg = isDark ? 'bg-[#141414] border-[#222]' : 'bg-white border-[#e5e5e5]';
   const textMain = isDark ? 'text-white' : 'text-[#1a1a1a]';
   const textMuted = isDark ? 'text-[#888]' : 'text-[#666]';
-  
+
   el.innerHTML = `
     <div class="page space-y-4 pt-2 text-center">
       <div class="py-4">
         <p class="text-4xl mb-2">💪</p>
-        <h2 class="text-xl font-bold ${textMain}">Workout Complete!</h2>
+        <h2 class="font-display text-xl font-bold ${textMain} uppercase tracking-wide">Workout Complete!</h2>
         <p class="text-sm ${textMuted} mt-1">${w.planDayName} · ${duration} min · ${wSets} working sets</p>
       </div>
-      
+
       <div class="space-y-2 text-left">
         ${w.exercises.map(e => `
-          <div class="${cardBg} border rounded-xl p-3">
+          <div class="card-accent ${cardBg} border rounded-xl p-3">
             <div class="flex items-center justify-between">
               <div class="flex items-center gap-2 min-w-0">
                 <span class="${e.skipped ? 'text-yellow-500' : 'text-green-500'} text-xs">${e.skipped ? '⏭️' : '✅'}</span>
@@ -1209,8 +1384,8 @@ function renderWorkoutSummary(el) {
           </div>
         `).join('')}
       </div>
-      
-      <button onclick="saveWorkout()" class="w-full py-3.5 bg-crimson text-white font-bold rounded-xl text-sm min-h-[48px]">
+
+      <button onclick="saveWorkout()" class="w-full py-3.5 bg-crimson text-white font-display font-bold rounded-xl text-sm min-h-[48px] uppercase tracking-wider">
         Save Workout
       </button>
       <button onclick="discardWorkout()" class="w-full py-2 text-xs ${textMuted}">Discard</button>
@@ -1222,7 +1397,7 @@ function saveWorkout() {
   const w = activeWorkout;
   const duration = Math.round((Date.now() - w.startTime) / 60000);
   const today = new Date().toISOString().split('T')[0];
-  
+
   const session = {
     id: 's' + Date.now(),
     planDayId: w.planDayId,
@@ -1236,15 +1411,15 @@ function saveWorkout() {
       sets: e.sets || [],
     })),
   };
-  
+
   const sessions = getSessions();
   sessions.push(session);
   saveSessions(sessions);
-  
+
   if (workoutTimer) clearInterval(workoutTimer);
   workoutTimer = null;
   activeWorkout = null;
-  
+
   navigate('/history/' + session.id);
 }
 
@@ -1267,14 +1442,14 @@ function renderCoach(el) {
   const textMain = isDark ? 'text-white' : 'text-[#1a1a1a]';
   const textMuted = isDark ? 'text-[#888]' : 'text-[#666]';
   const inputBg = isDark ? 'bg-[#1a1a1a] border-[#333] text-white' : 'bg-[#f0f0f0] border-[#ddd] text-[#1a1a1a]';
-  
+
   if (chatMessages.length === 0) {
     chatMessages.push({
       role: 'bot',
-      text: "I'm your HIT Coach — Dorian Yates style. I analyze your training data to give you real advice. Tap a quick prompt or type your question below.",
+      text: "I'm your HIT Coach — Dorian Yates style. I analyze your training data to give you real advice. Ask me about forced reps, negatives, burns, drop sets, intensity cycling, or tap a quick prompt below.",
     });
   }
-  
+
   el.innerHTML = `
     <div class="page flex flex-col" style="height: calc(100dvh - 130px);">
       <!-- Quick Prompts -->
@@ -1282,20 +1457,21 @@ function renderCoach(el) {
         ${[
           { label: "What should I do today?", key: 'today' },
           { label: "Break through a stall", key: 'stall' },
-          { label: "Swap incline curls", key: 'swap' },
+          { label: "Intensity techniques", key: 'techniques' },
           { label: "Review my progress", key: 'progress' },
+          { label: "Swap incline curls", key: 'swap' },
         ].map(p => `
           <button onclick="coachPrompt('${p.key}')" class="${isDark ? 'bg-[#1a1a1a] border-[#333]' : 'bg-white border-[#ddd]'} border rounded-full px-3 py-2 text-[11px] font-medium ${textMain} whitespace-nowrap flex-shrink-0 min-h-[36px]">
             ${p.label}
           </button>
         `).join('')}
       </div>
-      
+
       <!-- Chat Messages -->
       <div id="chatContainer" class="flex-1 overflow-y-auto space-y-3 py-2">
         ${chatMessages.map(m => renderChatBubble(m)).join('')}
       </div>
-      
+
       <!-- Input -->
       <div class="flex gap-2 pt-2 pb-1 flex-shrink-0">
         <input type="text" id="coachInput" class="input-bg ${inputBg} border rounded-xl flex-1 px-4 py-3 text-sm" placeholder="Ask your coach..." onkeydown="if(event.key==='Enter')coachSend()">
@@ -1305,7 +1481,7 @@ function renderCoach(el) {
       </div>
     </div>
   `;
-  
+
   // Scroll to bottom
   setTimeout(() => {
     const container = document.getElementById('chatContainer');
@@ -1319,7 +1495,7 @@ function renderChatBubble(msg) {
     return `
       <div class="flex gap-2 items-start">
         <div class="w-7 h-7 rounded-full bg-crimson flex items-center justify-center flex-shrink-0 mt-0.5">
-          <span class="text-white text-xs font-bold">DY</span>
+          <span class="text-white text-xs font-display font-bold">DY</span>
         </div>
         <div class="chat-bot ${isDark ? 'bg-[#1a1a1a]' : 'bg-white'} px-3 py-2.5 max-w-[85%]">
           <p class="text-[13px] ${textMain} leading-relaxed whitespace-pre-wrap">${msg.text}</p>
@@ -1343,12 +1519,13 @@ function coachPrompt(key) {
     stall: "How do I break through a stall?",
     swap: "Swap out incline curls",
     progress: "Review my recent progress",
+    techniques: "Tell me about Dorian's intensity techniques",
   };
-  
+
   chatMessages.push({ role: 'user', text: labels[key] });
-  
+
   let response = '';
-  
+
   if (key === 'today') {
     const next = getNextPlanDay();
     const lines = [`Today is Day ${next.day}: ${next.name}. Here's your targets:\n`];
@@ -1370,13 +1547,16 @@ function coachPrompt(key) {
         lines.push(`⚠️ ${s.name} — stuck at ${s.bodyweight ? 'BW' : s.weight + ' lbs'} × ${s.reps}`);
       }
       lines.push(`\nHIT strategies to break through:`);
-      lines.push(`1. Slower negatives (4-5 seconds down)`);
-      lines.push(`2. Rest-pause: hit failure, rest 10s, squeeze out 2-3 more`);
-      lines.push(`3. Forced negatives: have a partner help you lift, lower on your own`);
-      lines.push(`4. Pre-exhaust: do an isolation set before the compound`);
-      lines.push(`5. Swap the exercise for a variation (keeps the muscle guessing)`);
+      lines.push(`1. Forced reps: at failure, have a partner help you complete 1-2 more reps`);
+      lines.push(`2. Negatives: lower the weight slowly (4-5s) on the eccentric portion`);
+      lines.push(`3. Burns: short partial reps at the end of a set to push past failure`);
+      lines.push(`4. Drop sets: immediately reduce weight by 20-30% and continue repping`);
+      lines.push(`5. Pre-exhaust: isolation exercise before compound to pre-fatigue the target muscle`);
+      lines.push(`6. Swap the exercise for a variation (keeps the muscle guessing)`);
       response = lines.join('\n');
     }
+  } else if (key === 'techniques') {
+    response = `Dorian's Training Journal (1985-1990) documents these intensity techniques:\n\n💥 FORCED REPS\nAt failure, have a partner help you complete 1-2 more reps. The partner gives minimum assistance — you fight for every inch.\n\n⬇️ NEGATIVES\nLower the weight slowly (4-5 seconds) on the eccentric portion. This is half the rep most people throw away. Control it.\n\n🔥 BURNS\nShort partial reps at the end of a set. After you can't complete full reps, squeeze out 6-8 partial reps in the strongest range of motion.\n\n📉 DROP SETS\nImmediately reduce weight by 20-30% and continue repping until failure again. One drop is usually enough.\n\n🎯 PRE-EXHAUST\nDo an isolation exercise before the compound to pre-fatigue the target muscle. Example: flyes before bench press.\n\n🔄 INTENSITY CYCLING\nEvery 6-8 weeks, take a deload week at 50% intensity. Dorian noted when he "worked light due to sore joints" — respect recovery.\n\nThe journal shows Dorian trained 3 days/week (Mon-Wed-Fri), rotating muscle groups. Sessions at 2:30 PM. Brief, brutal, and intense.`;
   } else if (key === 'swap') {
     response = `For incline curls, I'd recommend swapping to one of these:\n\n1. Standing DB Curls — already in your plan, great for overall bicep development\n2. Concentration Curls — isolates the peak, easier on the shoulder joint\n\n⚠️ Given your shoulder cuff concerns, AVOID:\n• Heavy barbell curls with momentum\n• Behind-the-back cable curls\n• Any curl variation that puts the shoulder in extreme extension\n\nConcentration curls are your safest bet — seated, elbow braced on inner thigh, pure isolation. Start with 15-20 lbs for 8-12 reps.`;
   } else if (key === 'progress') {
@@ -1387,7 +1567,7 @@ function coachPrompt(key) {
       const wSets = s.exercises.reduce((n, e) => n + (e.skipped ? 0 : e.sets.filter(st => st.type === 'working').length), 0);
       lines.push(`📅 ${formatDate(s.date)} — ${s.planDayName} (${s.duration} min, ${wSets} sets)`);
     }
-    
+
     // Check for recent PRs
     const prs = getAllPRs().slice(0, 3);
     if (prs.length > 0) {
@@ -1396,16 +1576,16 @@ function coachPrompt(key) {
         lines.push(`• ${pr.name}: ${pr.bodyweight ? 'BW' : pr.weight + ' lbs'} × ${pr.reps} (${formatDate(pr.date)})`);
       }
     }
-    
+
     const stalled = getStalledExercises();
     if (stalled.length > 0) {
       lines.push(`\n⚠️ ${stalled.length} exercise${stalled.length > 1 ? 's' : ''} stalled — address these next session.`);
     }
-    
+
     lines.push(`\nOverall: solid consistency. Keep the intensity up and the workouts brief.`);
     response = lines.join('\n');
   }
-  
+
   chatMessages.push({ role: 'bot', text: response });
   renderCoach(document.getElementById('main'));
 }
@@ -1414,13 +1594,13 @@ function coachSend() {
   const input = document.getElementById('coachInput');
   const text = input.value.trim();
   if (!text) return;
-  
+
   chatMessages.push({ role: 'user', text });
-  
+
   // Keyword matching
   const lower = text.toLowerCase();
   let response = '';
-  
+
   if (lower.includes('today') || lower.includes('next') || lower.includes('what should')) {
     coachPrompt('today');
     return;
@@ -1433,8 +1613,11 @@ function coachSend() {
   } else if (lower.includes('progress') || lower.includes('review') || lower.includes('how am i') || lower.includes('recent')) {
     coachPrompt('progress');
     return;
-  } else if (lower.includes('rest') || lower.includes('recovery')) {
-    response = "In HIT, recovery is just as important as the training. Rest at least 48 hours between sessions hitting the same muscle group. Sleep 7-9 hours. Eat sufficient protein (0.8-1g per pound bodyweight). If you're not recovering, you won't grow — Dorian trained each body part once per week.";
+  } else if (lower.includes('technique') || lower.includes('forced rep') || lower.includes('negative') || lower.includes('burn') || lower.includes('drop set') || lower.includes('pre-exhaust') || lower.includes('intensity cycl')) {
+    coachPrompt('techniques');
+    return;
+  } else if (lower.includes('rest') || lower.includes('recovery') || lower.includes('deload')) {
+    response = "In HIT, recovery is just as important as the training. Rest at least 48 hours between sessions hitting the same muscle group. Sleep 7-9 hours. Eat sufficient protein (0.8-1g per pound bodyweight). If you're not recovering, you won't grow — Dorian trained each body part once per week.\n\nFrom the journal: every 6-8 weeks, take a deload week at 50% intensity. Dorian noted when he 'worked light due to sore joints' — the smart move is to respect recovery, not push through injury.";
   } else if (lower.includes('diet') || lower.includes('protein') || lower.includes('eat') || lower.includes('nutrition')) {
     response = "For HIT training, aim for:\n• Protein: 0.8-1g per pound bodyweight\n• Eat in a slight surplus for muscle gain, deficit for fat loss\n• Pre-workout meal 1-2 hours before training\n• Post-workout: protein + carbs within 1 hour\n• Stay hydrated — at least 1 gallon of water daily";
   } else if (lower.includes('failure') || lower.includes('intensity')) {
@@ -1442,9 +1625,9 @@ function coachSend() {
   } else if (lower.includes('warm') || lower.includes('warmup')) {
     response = "Warmup protocol:\n1. First warmup: ~60% of working weight, 12 reps (NOT to failure)\n2. Second warmup: ~80% of working weight, 6-8 reps (NOT to failure)\n\nWarmups prepare the joint and muscle, they DON'T fatigue you. Save everything for the working set.";
   } else {
-    response = "I can help with:\n• Training recommendations ('What should I do today?')\n• Breaking through plateaus ('How do I break a stall?')\n• Exercise swaps ('Swap incline curls')\n• Progress reviews ('Review my progress')\n• Recovery, nutrition, and HIT principles\n\nTry one of these topics or tap a quick prompt above!";
+    response = "I can help with:\n• Training recommendations ('What should I do today?')\n• Breaking through plateaus ('How do I break a stall?')\n• Dorian's intensity techniques (forced reps, negatives, burns, drop sets)\n• Exercise swaps ('Swap incline curls')\n• Progress reviews ('Review my progress')\n• Recovery, nutrition, and HIT principles\n\nTry one of these topics or tap a quick prompt above!";
   }
-  
+
   chatMessages.push({ role: 'bot', text: response });
   renderCoach(document.getElementById('main'));
 }
@@ -1458,24 +1641,24 @@ function renderHistory(el) {
   const cardBg = isDark ? 'bg-[#141414] border-[#222]' : 'bg-white border-[#e5e5e5]';
   const textMain = isDark ? 'text-white' : 'text-[#1a1a1a]';
   const textMuted = isDark ? 'text-[#888]' : 'text-[#666]';
-  
+
   el.innerHTML = `
-    <div class="page space-y-3 pt-2">
-      <h2 class="text-lg font-bold ${textMain}">Training History</h2>
+    <div class="page space-y-3 pt-3">
+      <h2 class="font-display text-xl font-bold ${textMain} uppercase tracking-wide">Training History</h2>
       <p class="text-xs ${textMuted}">${sessions.length} total sessions</p>
-      
+
       ${sessions.length === 0 ? `
         <div class="text-center py-12">
           <p class="text-3xl mb-2">🏋️</p>
           <p class="${textMuted} text-sm">No sessions yet. Start your first workout!</p>
         </div>
       ` : ''}
-      
+
       <div class="space-y-2">
         ${sessions.map(s => {
           const wSets = s.exercises.reduce((n, e) => n + (e.skipped ? 0 : e.sets.filter(st => st.type === 'working').length), 0);
           return `
-            <div class="card-touch ${cardBg} border rounded-xl p-4 cursor-pointer" onclick="navigate('/history/${s.id}')">
+            <div class="card-touch card-accent ${cardBg} border rounded-xl p-4 cursor-pointer" onclick="navigate('/history/${s.id}')">
               <div class="flex items-center justify-between">
                 <div>
                   <p class="text-[15px] font-semibold ${textMain}">${s.planDayName}</p>
@@ -1505,12 +1688,12 @@ function renderSessionDetail(el, id) {
   const cardBg = isDark ? 'bg-[#141414] border-[#222]' : 'bg-white border-[#e5e5e5]';
   const textMain = isDark ? 'text-white' : 'text-[#1a1a1a]';
   const textMuted = isDark ? 'text-[#888]' : 'text-[#666]';
-  
+
   if (!session) {
     el.innerHTML = `<div class="page text-center py-20"><p class="${textMuted}">Session not found</p></div>`;
     return;
   }
-  
+
   el.innerHTML = `
     <div class="page space-y-3 pt-2">
       <!-- Back -->
@@ -1518,35 +1701,35 @@ function renderSessionDetail(el, id) {
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
         History
       </button>
-      
+
       <!-- Header -->
       <div>
-        <h2 class="text-xl font-bold ${textMain}">${session.planDayName}</h2>
+        <h2 class="font-display text-xl font-bold ${textMain} uppercase tracking-wide">${session.planDayName}</h2>
         <div class="flex items-center gap-3 mt-1">
           <span class="text-sm ${textMuted}">${formatDate(session.date)}</span>
           <span class="text-sm ${textMuted}">${session.duration} min</span>
         </div>
       </div>
-      
+
       ${session.notes ? `<p class="text-sm ${textMuted} italic">${session.notes}</p>` : ''}
-      
+
       <!-- Exercises -->
       <div class="space-y-3">
         ${session.exercises.map(ex => {
           const warmups = ex.sets ? ex.sets.filter(s => s.type === 'warmup') : [];
           const working = ex.sets ? ex.sets.filter(s => s.type === 'working') : [];
-          
+
           return `
-            <div class="${cardBg} border rounded-xl p-4">
+            <div class="card-accent ${cardBg} border rounded-xl p-4">
               <div class="flex items-center justify-between mb-2">
                 <h3 class="text-sm font-bold ${textMain}">${getExerciseName(ex.exerciseId)}</h3>
                 ${ex.skipped ? '<span class="text-[10px] bg-yellow-600/20 text-yellow-500 px-2 py-0.5 rounded-full font-bold">SKIPPED</span>' : ''}
               </div>
-              
+
               ${!ex.skipped ? `
                 ${warmups.length > 0 ? `
                   <div class="mb-2">
-                    <p class="text-[10px] ${textMuted} uppercase tracking-wider mb-1">Warmup</p>
+                    <p class="text-[10px] ${textMuted} uppercase tracking-wider font-display mb-1">Warmup</p>
                     ${warmups.map(s => `
                       <p class="font-mono text-xs ${textMuted}">${formatWeight(s)} × ${s.reps}</p>
                     `).join('')}
@@ -1554,7 +1737,7 @@ function renderSessionDetail(el, id) {
                 ` : ''}
                 ${working.length > 0 ? `
                   <div>
-                    <p class="text-[10px] text-crimson uppercase tracking-wider font-semibold mb-1">Working Set</p>
+                    <p class="text-[10px] text-crimson uppercase tracking-wider font-display font-semibold mb-1">Working Set</p>
                     ${working.map(s => `
                       <p class="font-mono text-sm font-bold ${textMain}">${formatWeight(s)} × ${s.reps} <span class="text-[10px] ${textMuted} font-normal">to failure</span></p>
                     `).join('')}
@@ -1580,23 +1763,23 @@ function renderPlan(el) {
   const cardBg = isDark ? 'bg-[#141414] border-[#222]' : 'bg-white border-[#e5e5e5]';
   const textMain = isDark ? 'text-white' : 'text-[#1a1a1a]';
   const textMuted = isDark ? 'text-[#888]' : 'text-[#666]';
-  
+
   el.innerHTML = `
-    <div class="page space-y-3 pt-2">
-      <h2 class="text-lg font-bold ${textMain}">4-Day Training Plan</h2>
+    <div class="page space-y-3 pt-3">
+      <h2 class="font-display text-xl font-bold ${textMain} uppercase tracking-wide">4-Day Training Plan</h2>
       <p class="text-xs ${textMuted}">Dorian Yates Blood & Guts — HIT Protocol</p>
-      
+
       <div class="space-y-3">
         ${plan.map(day => `
           <div class="${cardBg} border rounded-xl overflow-hidden">
-            <button onclick="togglePlanDay('plan-${day.id}')" class="w-full p-4 flex items-center justify-between text-left min-h-[56px]">
-              <div>
-                <p class="text-[15px] font-bold ${textMain}">Day ${day.day}: ${day.name}</p>
-                <p class="text-xs ${textMuted} mt-0.5">${day.exercises.length} exercises · ${day.exercises.reduce((n, e) => n + e.warmupSets, 0)} WU / ${day.exercises.reduce((n, e) => n + e.workingSets, 0)} WS</p>
+            <button onclick="togglePlanDay('plan-${day.id}')" class="day-bar w-full flex items-center justify-between text-left min-h-[48px]">
+              <span>DAY ${day.day}: ${day.name.toUpperCase()}</span>
+              <div class="flex items-center gap-3">
+                <span class="text-[10px] font-normal tracking-normal opacity-60">${day.exercises.length} exercises</span>
+                <svg id="chevron-plan-${day.id}" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="transition-transform"><polyline points="6 9 12 15 18 9"/></svg>
               </div>
-              <svg id="chevron-plan-${day.id}" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="${isDark ? '#888' : '#666'}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="transition-transform"><polyline points="6 9 12 15 18 9"/></svg>
             </button>
-            
+
             <div id="plan-${day.id}" class="hidden border-t ${isDark ? 'border-[#222]' : 'border-[#e5e5e5]'}">
               ${day.exercises.map((ex, i) => `
                 <div class="p-3 ${i > 0 ? 'border-t ' + (isDark ? 'border-[#1a1a1a]' : 'border-[#f0f0f0]') : ''}">
@@ -1649,13 +1832,6 @@ if ('serviceWorker' in navigator) {
 
 init();
 </script>
-
-<!-- Attribution Footer -->
-<div style="text-align: center; padding: 12px 16px 100px;">
-  <a href="https://www.perplexity.ai/computer" target="_blank" rel="noopener noreferrer" style="color: #666; font-size: 11px; text-decoration: none;">
-    Created with Perplexity Computer
-  </a>
-</div>
 
 </body>
 </html>
