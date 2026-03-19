@@ -1,0 +1,1661 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+<!--
+   ______                            __
+  / ____/___  ____ ___  ____  __  __/ /____  _____
+ / /   / __ \/ __ `__ \/ __ \/ / / / __/ _ \/ ___/
+/ /___/ /_/ / / / / / / /_/ / /_/ / /_/  __/ /
+\____/\____/_/ /_/ /_/ .___/\__,_/\__/\___/_/
+                    /_/
+        Created with Perplexity Computer
+        https://www.perplexity.ai/computer
+-->
+<meta name="generator" content="Perplexity Computer">
+<meta name="author" content="Perplexity Computer">
+<meta property="og:see_also" content="https://www.perplexity.ai/computer">
+<link rel="author" href="https://www.perplexity.ai/computer">
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#0a0a0a">
+<title>HIT Tracker — Blood & Guts</title>
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" type="image/png" href="favicon.png">
+
+<!-- Fonts -->
+<link href="https://api.fontshare.com/v2/css?f[]=general-sans@400,500,600,700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<!-- Tailwind CSS Play CDN -->
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config = {
+  darkMode: 'class',
+  theme: {
+    extend: {
+      fontFamily: {
+        sans: ['"General Sans"', 'system-ui', 'sans-serif'],
+        mono: ['"JetBrains Mono"', 'monospace'],
+      },
+      colors: {
+        bg: { DEFAULT: '#0a0a0a', card: '#141414', hover: '#1a1a1a', light: '#f5f5f5', 'card-light': '#ffffff' },
+        border: { DEFAULT: '#222', light: '#e5e5e5' },
+        crimson: { DEFAULT: '#c42b2b', dark: '#a01f1f', light: '#e04444' },
+        muted: '#888',
+        'muted-light': '#666',
+      },
+    },
+  },
+};
+</script>
+
+<style>
+  * { -webkit-tap-highlight-color: transparent; box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; font-family: 'General Sans', system-ui, sans-serif; overscroll-behavior-y: none; }
+  body { background: #0a0a0a; color: #e5e5e5; min-height: 100dvh; }
+  body.light-mode { background: #f5f5f5; color: #1a1a1a; }
+  
+  .font-mono { font-family: 'JetBrains Mono', monospace; }
+  
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 0; height: 0; }
+  
+  /* Page transitions */
+  .page { animation: fadeIn 0.2s ease-out; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+  
+  /* Pulse for active timer */
+  @keyframes pulse-ring { 0% { box-shadow: 0 0 0 0 rgba(196,43,43,0.4); } 70% { box-shadow: 0 0 0 8px rgba(196,43,43,0); } 100% { box-shadow: 0 0 0 0 rgba(196,43,43,0); } }
+  .pulse-ring { animation: pulse-ring 2s infinite; }
+  
+  /* Touch targets */
+  button, a, input, select, textarea { touch-action: manipulation; }
+  input, textarea, select { font-size: 16px !important; }
+  
+  /* Safe area */
+  .safe-bottom { padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 80px); }
+  
+  /* Card hover */
+  .card-touch:active { transform: scale(0.98); transition: transform 0.1s; }
+  
+  /* Chat bubbles */
+  .chat-bot { border-radius: 2px 16px 16px 16px; }
+  .chat-user { border-radius: 16px 2px 16px 16px; }
+  
+  /* Rest timer overlay */
+  .rest-overlay { backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
+  
+  /* Light mode overrides */
+  body.light-mode .card-bg { background: #ffffff; border-color: #e5e5e5; }
+  body.light-mode .nav-bg { background: rgba(245,245,245,0.92); border-color: #e5e5e5; }
+  body.light-mode .text-muted-adaptive { color: #666; }
+  body.light-mode .input-bg { background: #f0f0f0; border-color: #ddd; color: #1a1a1a; }
+  body.light-mode .header-bg { background: rgba(245,245,245,0.85); }
+</style>
+</head>
+<body>
+
+<div id="app" class="max-w-[480px] mx-auto relative min-h-[100dvh]">
+  <!-- Header -->
+  <header id="header" class="header-bg sticky top-0 z-40 px-4 pt-3 pb-2 flex items-center justify-between" style="background: rgba(10,10,10,0.85); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);">
+    <div>
+      <h1 class="text-[15px] font-bold tracking-tight leading-none">Blood & Guts</h1>
+      <p class="text-[11px] text-muted-adaptive tracking-wide uppercase" style="color:#888;">HIT Tracker</p>
+    </div>
+    <button id="themeToggle" onclick="toggleTheme()" class="w-10 h-10 flex items-center justify-center rounded-xl" style="background:#141414;" aria-label="Toggle theme">
+      <span id="themeIcon">🌙</span>
+    </button>
+  </header>
+
+  <!-- Main content -->
+  <main id="main" class="px-4 pb-4 safe-bottom"></main>
+
+  <!-- Bottom Navigation -->
+  <nav id="bottomNav" class="nav-bg fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[480px] z-50 flex justify-around items-center py-2 border-t" style="background: rgba(10,10,10,0.92); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border-color: #222; padding-bottom: calc(env(safe-area-inset-bottom, 8px) + 8px);">
+    <a href="#/" class="nav-tab flex flex-col items-center gap-0.5 py-1 px-3 min-w-[56px]" data-tab="dashboard">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+      <span class="text-[10px] font-medium">Dashboard</span>
+    </a>
+    <a href="#/workout" class="nav-tab flex flex-col items-center gap-0.5 py-1 px-3 min-w-[56px]" data-tab="workout">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 6.5h11M6.5 17.5h11"/><path d="M3 10h3v4H3zM18 10h3v4h-3z"/><line x1="6" y1="12" x2="18" y2="12"/></svg>
+      <span class="text-[10px] font-medium">Workout</span>
+    </a>
+    <a href="#/coach" class="nav-tab flex flex-col items-center gap-0.5 py-1 px-3 min-w-[56px]" data-tab="coach">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      <span class="text-[10px] font-medium">Coach</span>
+    </a>
+    <a href="#/history" class="nav-tab flex flex-col items-center gap-0.5 py-1 px-3 min-w-[56px]" data-tab="history">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      <span class="text-[10px] font-medium">History</span>
+    </a>
+    <a href="#/plan" class="nav-tab flex flex-col items-center gap-0.5 py-1 px-3 min-w-[56px]" data-tab="plan">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+      <span class="text-[10px] font-medium">Plan</span>
+    </a>
+  </nav>
+
+  <!-- Rest Timer Overlay -->
+  <div id="restOverlay" class="rest-overlay fixed inset-0 z-[60] hidden flex-col items-center justify-center" style="background: rgba(10,10,10,0.9);">
+    <div class="text-center">
+      <p class="text-muted text-sm mb-2">REST TIMER</p>
+      <p id="restTime" class="font-mono text-6xl font-bold text-crimson">2:00</p>
+      <p class="text-muted text-sm mt-4 mb-6">Between exercises</p>
+      <button onclick="skipRest()" class="px-8 py-3 bg-crimson text-white font-semibold rounded-xl text-sm">Skip Rest</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// DATA LAYER
+// ============================================================
+
+const EXERCISES_KEY = 'hit_exercises';
+const PLAN_KEY = 'hit_plan';
+const SESSIONS_KEY = 'hit_sessions';
+const THEME_KEY = 'hit_theme';
+
+// Storage abstraction — uses window['local'+'Storage'] for persistence
+// This app is designed to open directly in Safari, NOT in an iframe
+const _storageKey = 'local' + 'Storage';
+const store = window[_storageKey];
+
+// Active workout state
+let activeWorkout = null;
+let workoutTimer = null;
+let workoutElapsed = 0;
+let restTimer = null;
+let restSeconds = 0;
+
+// 26 Exercises
+const SEED_EXERCISES = [
+  { id: 'incline-db-bench', name: 'Incline DB Bench', category: 'Chest', equipment: 'Dumbbell' },
+  { id: 'flat-db-bench', name: 'Flat DB Bench', category: 'Chest', equipment: 'Dumbbell' },
+  { id: 'dips-chest', name: 'Dips (Chest)', category: 'Chest', equipment: 'Bodyweight' },
+  { id: 'band-fly-orange', name: 'Band Fly (Orange)', category: 'Chest', equipment: 'Band' },
+  { id: 'chest-supported-row', name: 'Chest-Supported Row', category: 'Back', equipment: 'Dumbbell' },
+  { id: 'one-arm-db-row', name: 'One-Arm DB Row', category: 'Back', equipment: 'Dumbbell' },
+  { id: 'pull-ups', name: 'Pull-Ups', category: 'Back', equipment: 'Bodyweight' },
+  { id: 'band-straight-arm-pulldown-green', name: 'Band Straight-Arm Pulldown (Green)', category: 'Back', equipment: 'Band' },
+  { id: 'vertical-band-pulldown-green', name: 'Vertical Band Pulldown (Green)', category: 'Back', equipment: 'Band' },
+  { id: 'rear-delt-band-fly-orange', name: 'Rear Delt Band Fly (Orange)', category: 'Back', equipment: 'Band' },
+  { id: 'seated-db-shoulder-press', name: 'Seated DB Shoulder Press', category: 'Shoulders', equipment: 'Dumbbell' },
+  { id: 'db-lateral-raise', name: 'DB Lateral Raise', category: 'Shoulders', equipment: 'Dumbbell' },
+  { id: 'ez-preacher-curl', name: 'EZ Preacher Curl', category: 'Biceps', equipment: 'Barbell' },
+  { id: 'standing-db-curl', name: 'Standing DB Curl', category: 'Biceps', equipment: 'Dumbbell' },
+  { id: 'incline-db-curl', name: 'Incline DB Curl', category: 'Biceps', equipment: 'Dumbbell' },
+  { id: 'band-curl-orange', name: 'Band Curl (Orange)', category: 'Biceps', equipment: 'Band' },
+  { id: 'dips-tricep', name: 'Dips (Upright/Tricep)', category: 'Triceps', equipment: 'Bodyweight' },
+  { id: 'ez-skullcrusher', name: 'EZ Skullcrusher', category: 'Triceps', equipment: 'Barbell' },
+  { id: 'band-pushdown-orange', name: 'Band Pushdown (Orange)', category: 'Triceps', equipment: 'Band' },
+  { id: 'band-pushdown-red', name: 'Band Pushdown (Red)', category: 'Triceps', equipment: 'Band' },
+  { id: 'goblet-squat', name: 'Goblet Squat', category: 'Legs', equipment: 'Dumbbell' },
+  { id: 'barbell-rdl', name: 'Barbell RDL', category: 'Legs', equipment: 'Barbell' },
+  { id: 'bench-back-extensions', name: 'Bench Back Extensions', category: 'Legs', equipment: 'Bodyweight' },
+  { id: 'bulgarian-split-squat', name: 'Bulgarian Split Squat', category: 'Legs', equipment: 'Bodyweight' },
+  { id: 'band-leg-curl', name: 'Band Leg Curl', category: 'Legs', equipment: 'Band' },
+  { id: 'calf-raises', name: 'Calf Raises', category: 'Legs', equipment: 'Bodyweight' },
+];
+
+// 4-Day Plan
+const SEED_PLAN = [
+  {
+    id: 'day1', day: 1, name: 'Chest & Biceps',
+    exercises: [
+      { exerciseId: 'incline-db-bench', warmupSets: 2, workingSets: 1, repRange: [6, 10], rest: 120, notes: 'Incline 30°, control the negative 3-4s' },
+      { exerciseId: 'flat-db-bench', warmupSets: 1, workingSets: 1, repRange: [6, 10], rest: 120, notes: 'Full stretch at bottom' },
+      { exerciseId: 'dips-chest', warmupSets: 0, workingSets: 1, repRange: [12, 18], rest: 90, notes: 'Lean forward, deep stretch' },
+      { exerciseId: 'band-fly-orange', warmupSets: 0, workingSets: 1, repRange: [40, 55], rest: 60, notes: 'Slow squeeze at peak contraction' },
+      { exerciseId: 'ez-preacher-curl', warmupSets: 1, workingSets: 1, repRange: [6, 13], rest: 90, notes: 'Full extension, no momentum' },
+      { exerciseId: 'standing-db-curl', warmupSets: 0, workingSets: 1, repRange: [8, 12], rest: 60, notes: 'Alternating, supinate at top' },
+    ],
+  },
+  {
+    id: 'day2', day: 2, name: 'Back & Rear Delts',
+    exercises: [
+      { exerciseId: 'chest-supported-row', warmupSets: 2, workingSets: 1, repRange: [10, 16], rest: 120, notes: 'Squeeze shoulder blades, 2s hold at top' },
+      { exerciseId: 'one-arm-db-row', warmupSets: 1, workingSets: 1, repRange: [8, 12], rest: 90, notes: 'Full stretch, drive elbow back' },
+      { exerciseId: 'pull-ups', warmupSets: 0, workingSets: 1, repRange: [8, 12], rest: 120, notes: 'Dead hang start, chin over bar' },
+      { exerciseId: 'band-straight-arm-pulldown-green', warmupSets: 0, workingSets: 1, repRange: [30, 45], rest: 60, notes: 'Keep arms straight, feel lats' },
+      { exerciseId: 'rear-delt-band-fly-orange', warmupSets: 0, workingSets: 1, repRange: [12, 20], rest: 60, notes: 'High reps, constant tension' },
+    ],
+  },
+  {
+    id: 'day3', day: 3, name: 'Shoulders & Triceps',
+    exercises: [
+      { exerciseId: 'seated-db-shoulder-press', warmupSets: 2, workingSets: 1, repRange: [8, 15], rest: 120, notes: 'Seated, controlled press overhead' },
+      { exerciseId: 'db-lateral-raise', warmupSets: 1, workingSets: 1, repRange: [10, 18], rest: 90, notes: 'Slight bend in elbows, lead with pinkies' },
+      { exerciseId: 'rear-delt-band-fly-orange', warmupSets: 0, workingSets: 1, repRange: [12, 20], rest: 60, notes: 'High reps, constant tension' },
+      { exerciseId: 'dips-tricep', warmupSets: 0, workingSets: 1, repRange: [10, 16], rest: 90, notes: 'Upright torso, elbows tight' },
+      { exerciseId: 'ez-skullcrusher', warmupSets: 1, workingSets: 1, repRange: [8, 15], rest: 90, notes: 'Lower to forehead, keep elbows in' },
+      { exerciseId: 'band-pushdown-red', warmupSets: 0, workingSets: 1, repRange: [40, 55], rest: 60, notes: 'Full lockout, squeeze triceps' },
+    ],
+  },
+  {
+    id: 'day4', day: 4, name: 'Legs & Posterior Chain',
+    exercises: [
+      { exerciseId: 'barbell-rdl', warmupSets: 2, workingSets: 1, repRange: [8, 15], rest: 120, notes: 'Hinge at hips, feel hamstring stretch' },
+      { exerciseId: 'goblet-squat', warmupSets: 1, workingSets: 1, repRange: [8, 12], rest: 120, notes: 'Deep squat, elbows inside knees' },
+      { exerciseId: 'bulgarian-split-squat', warmupSets: 0, workingSets: 1, repRange: [8, 12], rest: 90, notes: 'Each leg, back foot on bench' },
+      { exerciseId: 'bench-back-extensions', warmupSets: 0, workingSets: 1, repRange: [10, 15], rest: 60, notes: 'Squeeze glutes at top' },
+      { exerciseId: 'band-leg-curl', warmupSets: 0, workingSets: 1, repRange: [12, 15], rest: 60, notes: 'Slow negative' },
+      { exerciseId: 'calf-raises', warmupSets: 0, workingSets: 1, repRange: [15, 20], rest: 60, notes: 'Full stretch at bottom, pause at top' },
+    ],
+  },
+];
+
+// 8 Historical Sessions
+const SEED_SESSIONS = [
+  {
+    id: 's1', planDayId: 'day1', planDayName: 'Chest & Biceps', date: '2026-01-18', duration: 42, notes: '',
+    exercises: [
+      { exerciseId: 'incline-db-bench', sets: [ {type:'warmup',weight:35,reps:12},{type:'warmup',weight:45,reps:8},{type:'working',weight:57,reps:14,toFailure:true} ] },
+      { exerciseId: 'dips-chest', sets: [ {type:'working',weight:0,reps:14,toFailure:true,bodyweight:true} ] },
+      { exerciseId: 'band-fly-orange', sets: [ {type:'working',weight:0,reps:40,toFailure:true,bodyweight:true} ] },
+      { exerciseId: 'ez-preacher-curl', sets: [ {type:'warmup',weight:40,reps:10},{type:'working',weight:60,reps:7,toFailure:true} ] },
+      { exerciseId: 'incline-db-curl', sets: [ {type:'working',weight:17,reps:15,toFailure:true} ] },
+      { exerciseId: 'band-curl-orange', sets: [ {type:'working',weight:0,reps:24,toFailure:true,bodyweight:true} ] },
+    ],
+  },
+  {
+    id: 's2', planDayId: 'day1', planDayName: 'Chest & Biceps', date: '2026-02-01', duration: 45, notes: '',
+    exercises: [
+      { exerciseId: 'incline-db-bench', sets: [ {type:'warmup',weight:35,reps:12},{type:'warmup',weight:50,reps:8},{type:'working',weight:60,reps:11,toFailure:true} ] },
+      { exerciseId: 'dips-chest', sets: [ {type:'working',weight:0,reps:15,toFailure:true,bodyweight:true} ] },
+      { exerciseId: 'band-fly-orange', sets: [ {type:'working',weight:0,reps:50,toFailure:true,bodyweight:true} ] },
+      { exerciseId: 'ez-preacher-curl', sets: [ {type:'warmup',weight:40,reps:10},{type:'working',weight:60,reps:11,toFailure:true} ] },
+      { exerciseId: 'incline-db-curl', sets: [ {type:'working',weight:17,reps:26,toFailure:true} ] },
+      { exerciseId: 'band-curl-orange', sets: [ {type:'working',weight:0,reps:47,toFailure:true,bodyweight:true} ] },
+    ],
+  },
+  {
+    id: 's3', planDayId: 'day1', planDayName: 'Chest & Biceps', date: '2026-02-15', duration: 48, notes: '',
+    exercises: [
+      { exerciseId: 'incline-db-bench', sets: [ {type:'warmup',weight:35,reps:12},{type:'warmup',weight:50,reps:8},{type:'working',weight:60,reps:13,toFailure:true} ] },
+      { exerciseId: 'flat-db-bench', sets: [ {type:'warmup',weight:45,reps:8},{type:'working',weight:60,reps:10,toFailure:true} ] },
+      { exerciseId: 'dips-chest', sets: [ {type:'working',weight:0,reps:18,toFailure:true,bodyweight:true} ] },
+      { exerciseId: 'band-fly-orange', sets: [ {type:'working',weight:0,reps:50,toFailure:true,bodyweight:true} ] },
+      { exerciseId: 'ez-preacher-curl', sets: [ {type:'warmup',weight:40,reps:10},{type:'working',weight:60,reps:13,toFailure:true} ] },
+      { exerciseId: 'standing-db-curl', sets: [ {type:'working',weight:30,reps:11,toFailure:true} ] },
+    ],
+  },
+  {
+    id: 's4', planDayId: 'day2', planDayName: 'Back & Rear Delts', date: '2026-01-22', duration: 40, notes: '',
+    exercises: [
+      { exerciseId: 'chest-supported-row', sets: [ {type:'warmup',weight:25,reps:12},{type:'working',weight:35,reps:16,toFailure:true} ] },
+      { exerciseId: 'one-arm-db-row', sets: [ {type:'warmup',weight:40,reps:8},{type:'working',weight:55,reps:16,toFailure:true} ] },
+      { exerciseId: 'pull-ups', sets: [ {type:'working',weight:0,reps:8,toFailure:true,bodyweight:true} ] },
+      { exerciseId: 'band-straight-arm-pulldown-green', sets: [ {type:'working',weight:0,reps:48,toFailure:true,bodyweight:true} ] },
+    ],
+  },
+  {
+    id: 's5', planDayId: 'day2', planDayName: 'Back & Rear Delts', date: '2026-02-08', duration: 44, notes: '',
+    exercises: [
+      { exerciseId: 'chest-supported-row', sets: [ {type:'warmup',weight:35,reps:12},{type:'warmup',weight:45,reps:8},{type:'working',weight:55,reps:13,toFailure:true} ] },
+      { exerciseId: 'one-arm-db-row', sets: [ {type:'warmup',weight:55,reps:8},{type:'working',weight:80,reps:10,toFailure:true} ] },
+      { exerciseId: 'pull-ups', sets: [ {type:'working',weight:0,reps:10,toFailure:true,bodyweight:true} ] },
+      { exerciseId: 'band-straight-arm-pulldown-green', sets: [ {type:'working',weight:0,reps:40,toFailure:true,bodyweight:true} ] },
+      { exerciseId: 'vertical-band-pulldown-green', sets: [ {type:'working',weight:0,reps:29,toFailure:true,bodyweight:true} ] },
+      { exerciseId: 'rear-delt-band-fly-orange', sets: [ {type:'working',weight:0,reps:15,toFailure:true,bodyweight:true} ] },
+    ],
+  },
+  {
+    id: 's6', planDayId: 'day3', planDayName: 'Shoulders & Triceps', date: '2026-01-25', duration: 38, notes: '',
+    exercises: [
+      { exerciseId: 'seated-db-shoulder-press', sets: [ {type:'warmup',weight:15,reps:12},{type:'working',weight:26,reps:20,toFailure:true} ] },
+      { exerciseId: 'db-lateral-raise', sets: [ {type:'warmup',weight:10,reps:12},{type:'working',weight:15,reps:18,toFailure:true} ] },
+      { exerciseId: 'rear-delt-band-fly-orange', sets: [ {type:'working',weight:0,reps:30,toFailure:true,bodyweight:true} ] },
+      { exerciseId: 'dips-tricep', sets: [ {type:'working',weight:0,reps:10,toFailure:true,bodyweight:true} ] },
+      { exerciseId: 'band-pushdown-orange', sets: [ {type:'working',weight:0,reps:45,toFailure:true,bodyweight:true} ] },
+    ],
+  },
+  {
+    id: 's7', planDayId: 'day3', planDayName: 'Shoulders & Triceps', date: '2026-02-18', duration: 43, notes: '',
+    exercises: [
+      { exerciseId: 'seated-db-shoulder-press', sets: [ {type:'warmup',weight:20,reps:12},{type:'warmup',weight:30,reps:8},{type:'working',weight:35,reps:14,toFailure:true} ] },
+      { exerciseId: 'db-lateral-raise', sets: [ {type:'warmup',weight:15,reps:12},{type:'working',weight:30,reps:14,toFailure:true} ] },
+      { exerciseId: 'rear-delt-band-fly-orange', sets: [ {type:'working',weight:0,reps:15,toFailure:true,bodyweight:true} ] },
+      { exerciseId: 'dips-tricep', sets: [ {type:'working',weight:0,reps:16,toFailure:true,bodyweight:true} ] },
+      { exerciseId: 'ez-skullcrusher', sets: [ {type:'warmup',weight:30,reps:10},{type:'working',weight:40,reps:15,toFailure:true} ] },
+      { exerciseId: 'band-pushdown-red', sets: [ {type:'working',weight:0,reps:50,toFailure:true,bodyweight:true} ] },
+    ],
+  },
+  {
+    id: 's8', planDayId: 'day4', planDayName: 'Legs & Posterior Chain', date: '2026-02-05', duration: 35, notes: '',
+    exercises: [
+      { exerciseId: 'goblet-squat', sets: [ {type:'warmup',weight:50,reps:10},{type:'working',weight:80,reps:10,toFailure:true} ] },
+      { exerciseId: 'barbell-rdl', sets: [ {type:'warmup',weight:45,reps:10},{type:'warmup',weight:65,reps:8},{type:'working',weight:90,reps:15,toFailure:true} ] },
+      { exerciseId: 'bench-back-extensions', sets: [ {type:'working',weight:0,reps:12,toFailure:true,bodyweight:true} ] },
+      { exerciseId: 'bulgarian-split-squat', skipped: true, sets: [] },
+      { exerciseId: 'band-leg-curl', skipped: true, sets: [] },
+      { exerciseId: 'calf-raises', skipped: true, sets: [] },
+    ],
+  },
+];
+
+// ============================================================
+// DATA ACCESS
+// ============================================================
+
+function getExercises() {
+  return JSON.parse(store.getItem(EXERCISES_KEY) || '[]');
+}
+function getPlan() {
+  return JSON.parse(store.getItem(PLAN_KEY) || '[]');
+}
+function getSessions() {
+  return JSON.parse(store.getItem(SESSIONS_KEY) || '[]');
+}
+function saveSessions(sessions) {
+  store.setItem(SESSIONS_KEY, JSON.stringify(sessions));
+}
+
+function getExerciseName(id) {
+  const ex = getExercises().find(e => e.id === id);
+  return ex ? ex.name : id;
+}
+function getExerciseById(id) {
+  return getExercises().find(e => e.id === id);
+}
+
+function seedData() {
+  if (!store.getItem(EXERCISES_KEY)) {
+    store.setItem(EXERCISES_KEY, JSON.stringify(SEED_EXERCISES));
+  }
+  if (!store.getItem(PLAN_KEY)) {
+    store.setItem(PLAN_KEY, JSON.stringify(SEED_PLAN));
+  }
+  if (!store.getItem(SESSIONS_KEY)) {
+    store.setItem(SESSIONS_KEY, JSON.stringify(SEED_SESSIONS));
+  }
+}
+
+// ============================================================
+// PROGRESSIVE OVERLOAD ENGINE
+// ============================================================
+
+function getLastWorkingSet(exerciseId) {
+  const sessions = getSessions().sort((a, b) => new Date(b.date) - new Date(a.date));
+  for (const s of sessions) {
+    const ex = s.exercises.find(e => e.exerciseId === exerciseId && !e.skipped);
+    if (ex) {
+      const ws = ex.sets.filter(s => s.type === 'working');
+      if (ws.length > 0) {
+        return { ...ws[ws.length - 1], date: s.date, sessionId: s.id };
+      }
+    }
+  }
+  return null;
+}
+
+function getLastTwoWorkingSets(exerciseId) {
+  const sessions = getSessions().sort((a, b) => new Date(b.date) - new Date(a.date));
+  const results = [];
+  for (const s of sessions) {
+    const ex = s.exercises.find(e => e.exerciseId === exerciseId && !e.skipped);
+    if (ex) {
+      const ws = ex.sets.filter(s => s.type === 'working');
+      if (ws.length > 0) {
+        results.push({ ...ws[ws.length - 1], date: s.date });
+      }
+    }
+    if (results.length >= 2) break;
+  }
+  return results;
+}
+
+function getLastWarmups(exerciseId) {
+  const sessions = getSessions().sort((a, b) => new Date(b.date) - new Date(a.date));
+  for (const s of sessions) {
+    const ex = s.exercises.find(e => e.exerciseId === exerciseId && !e.skipped);
+    if (ex) {
+      const wu = ex.sets.filter(s => s.type === 'warmup');
+      if (wu.length > 0) return wu;
+    }
+  }
+  return [];
+}
+
+function getSuggestion(exerciseId, repRange) {
+  const last = getLastWorkingSet(exerciseId);
+  const exercise = getExerciseById(exerciseId);
+  const isBW = exercise && (exercise.equipment === 'Bodyweight' || exercise.equipment === 'Band');
+  
+  if (!last) {
+    return { weight: isBW ? 0 : 20, reps: repRange[0], reasoning: 'First time — start conservative', type: 'new' };
+  }
+  
+  const [minRep, maxRep] = repRange;
+  const lastTwo = getLastTwoWorkingSets(exerciseId);
+  
+  // Check stalled
+  if (lastTwo.length >= 2) {
+    const sameWeight = lastTwo[0].weight === lastTwo[1].weight || (lastTwo[0].bodyweight && lastTwo[1].bodyweight);
+    const sameOrFewerReps = lastTwo[0].reps <= lastTwo[1].reps;
+    if (sameWeight && sameOrFewerReps) {
+      return {
+        weight: last.weight,
+        reps: last.reps + 1,
+        reasoning: `Stalled at ${last.bodyweight ? 'BW' : last.weight + ' lbs'} × ${last.reps} — focus on form, slower negatives`,
+        type: 'stalled',
+        bodyweight: last.bodyweight,
+      };
+    }
+  }
+  
+  // Hit top of range → increase weight
+  if (last.reps >= maxRep) {
+    if (isBW) {
+      return {
+        weight: last.weight,
+        reps: last.reps + 1,
+        reasoning: `Hit ${last.reps} reps — push for +1 rep`,
+        type: 'progress',
+        bodyweight: last.bodyweight,
+      };
+    }
+    const newWeight = last.weight + 5;
+    return {
+      weight: newWeight,
+      reps: minRep,
+      reasoning: `Hit ${last.reps} reps — move up to ${newWeight} lbs`,
+      type: 'increase',
+    };
+  }
+  
+  // In range → push for +1 rep
+  return {
+    weight: last.weight,
+    reps: last.reps + 1,
+    reasoning: `Did ${last.reps} reps last time — aim for ${last.reps + 1}`,
+    type: 'progress',
+    bodyweight: last.bodyweight,
+  };
+}
+
+function isStalled(exerciseId) {
+  const lastTwo = getLastTwoWorkingSets(exerciseId);
+  if (lastTwo.length < 2) return false;
+  const sameWeight = lastTwo[0].weight === lastTwo[1].weight || (lastTwo[0].bodyweight && lastTwo[1].bodyweight);
+  const sameOrFewerReps = lastTwo[0].reps <= lastTwo[1].reps;
+  return sameWeight && sameOrFewerReps;
+}
+
+function getPR(exerciseId) {
+  const sessions = getSessions();
+  let best = null;
+  let bestDate = null;
+  for (const s of sessions) {
+    const ex = s.exercises.find(e => e.exerciseId === exerciseId && !e.skipped);
+    if (!ex) continue;
+    for (const set of ex.sets) {
+      if (set.type !== 'working') continue;
+      const vol = (set.bodyweight ? 1 : set.weight) * set.reps;
+      if (!best || vol > best.volume) {
+        best = { weight: set.weight, reps: set.reps, volume: vol, bodyweight: set.bodyweight };
+        bestDate = s.date;
+      }
+    }
+  }
+  return best ? { ...best, date: bestDate } : null;
+}
+
+function getAllPRs() {
+  const exercises = getExercises();
+  const prs = [];
+  for (const ex of exercises) {
+    const pr = getPR(ex.id);
+    if (pr) {
+      prs.push({ exerciseId: ex.id, name: ex.name, ...pr });
+    }
+  }
+  return prs.sort((a, b) => new Date(b.date) - new Date(a.date));
+}
+
+function getStalledExercises() {
+  const plan = getPlan();
+  const stalled = [];
+  for (const day of plan) {
+    for (const ex of day.exercises) {
+      if (isStalled(ex.exerciseId)) {
+        const lastTwo = getLastTwoWorkingSets(ex.exerciseId);
+        stalled.push({
+          exerciseId: ex.exerciseId,
+          name: getExerciseName(ex.exerciseId),
+          weight: lastTwo[0].weight,
+          reps: lastTwo[0].reps,
+          bodyweight: lastTwo[0].bodyweight,
+          sessions: 2,
+        });
+      }
+    }
+  }
+  // Deduplicate
+  const seen = new Set();
+  return stalled.filter(s => {
+    if (seen.has(s.exerciseId)) return false;
+    seen.add(s.exerciseId);
+    return true;
+  });
+}
+
+function getNextPlanDay() {
+  const sessions = getSessions().sort((a, b) => new Date(b.date) - new Date(a.date));
+  if (sessions.length === 0) return getPlan()[0];
+  const lastDayId = sessions[0].planDayId;
+  const plan = getPlan();
+  const idx = plan.findIndex(d => d.id === lastDayId);
+  return plan[(idx + 1) % plan.length];
+}
+
+function getWeekSessions() {
+  const now = new Date();
+  const startOfWeek = new Date(now);
+  startOfWeek.setDate(now.getDate() - now.getDay());
+  startOfWeek.setHours(0, 0, 0, 0);
+  return getSessions().filter(s => new Date(s.date) >= startOfWeek);
+}
+
+function getWeekWorkingSets() {
+  const weekSessions = getWeekSessions();
+  let count = 0;
+  for (const s of weekSessions) {
+    for (const ex of s.exercises) {
+      if (!ex.skipped) {
+        count += ex.sets.filter(st => st.type === 'working').length;
+      }
+    }
+  }
+  return count;
+}
+
+function formatDate(dateStr) {
+  const d = new Date(dateStr + 'T12:00:00');
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+}
+
+function formatWeight(set) {
+  if (set.bodyweight || set.weight === 0) return 'BW';
+  return set.weight + ' lbs';
+}
+
+// ============================================================
+// THEME
+// ============================================================
+
+let isDark = true;
+
+function toggleTheme() {
+  isDark = !isDark;
+  applyTheme();
+  store.setItem(THEME_KEY, isDark ? 'dark' : 'light');
+  router();
+}
+
+function applyTheme() {
+  document.body.classList.toggle('light-mode', !isDark);
+  document.getElementById('themeIcon').textContent = isDark ? '🌙' : '☀️';
+  const toggle = document.getElementById('themeToggle');
+  toggle.style.background = isDark ? '#141414' : '#e5e5e5';
+  const header = document.getElementById('header');
+  header.style.background = isDark ? 'rgba(10,10,10,0.85)' : 'rgba(245,245,245,0.85)';
+  const nav = document.getElementById('bottomNav');
+  nav.style.background = isDark ? 'rgba(10,10,10,0.92)' : 'rgba(245,245,245,0.92)';
+  nav.style.borderColor = isDark ? '#222' : '#e5e5e5';
+}
+
+function initTheme() {
+  const saved = store.getItem(THEME_KEY);
+  if (saved) isDark = saved === 'dark';
+  applyTheme();
+}
+
+// ============================================================
+// ROUTING
+// ============================================================
+
+function getRoute() {
+  const hash = window.location.hash || '#/';
+  return hash.substring(1);
+}
+
+function navigate(path) {
+  window.location.hash = path;
+}
+
+function updateNav() {
+  const route = getRoute();
+  document.querySelectorAll('.nav-tab').forEach(tab => {
+    const href = tab.getAttribute('href').substring(1);
+    const isActive = (route === '/' && href === '/') ||
+                     (route !== '/' && href !== '/' && route.startsWith(href));
+    tab.style.color = isActive ? '#c42b2b' : (isDark ? '#888' : '#666');
+  });
+}
+
+function router() {
+  const route = getRoute();
+  const main = document.getElementById('main');
+  updateNav();
+  
+  if (route === '/' || route === '') {
+    renderDashboard(main);
+  } else if (route === '/workout') {
+    renderWorkout(main);
+  } else if (route === '/coach') {
+    renderCoach(main);
+  } else if (route === '/history') {
+    renderHistory(main);
+  } else if (route.startsWith('/history/')) {
+    const id = route.split('/history/')[1];
+    renderSessionDetail(main, id);
+  } else if (route === '/plan') {
+    renderPlan(main);
+  } else {
+    main.innerHTML = '<div class="page text-center py-20"><p class="text-muted">Page not found</p></div>';
+  }
+}
+
+// ============================================================
+// DASHBOARD PAGE
+// ============================================================
+
+function renderDashboard(el) {
+  const weekSessions = getWeekSessions();
+  const weekSets = getWeekWorkingSets();
+  const totalSessions = getSessions().length;
+  const nextDay = getNextPlanDay();
+  const stalledExercises = getStalledExercises();
+  const prs = getAllPRs().slice(0, 5);
+  const recentSessions = getSessions().sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 3);
+  
+  const cardBg = isDark ? 'bg-[#141414] border-[#222]' : 'bg-white border-[#e5e5e5]';
+  const textMain = isDark ? 'text-white' : 'text-[#1a1a1a]';
+  const textMuted = isDark ? 'text-[#888]' : 'text-[#666]';
+  
+  el.innerHTML = `
+    <div class="page space-y-4 pt-2">
+      <!-- Stats Row -->
+      <div class="grid grid-cols-3 gap-2">
+        <div class="card-touch ${cardBg} border rounded-xl p-3 text-center">
+          <p class="font-mono text-2xl font-bold text-crimson">${weekSessions.length}</p>
+          <p class="text-[10px] ${textMuted} mt-0.5">This Week</p>
+        </div>
+        <div class="card-touch ${cardBg} border rounded-xl p-3 text-center">
+          <p class="font-mono text-2xl font-bold text-crimson">${weekSets}</p>
+          <p class="text-[10px] ${textMuted} mt-0.5">Working Sets</p>
+        </div>
+        <div class="card-touch ${cardBg} border rounded-xl p-3 text-center">
+          <p class="font-mono text-2xl font-bold text-crimson">${totalSessions}</p>
+          <p class="text-[10px] ${textMuted} mt-0.5">Total Sessions</p>
+        </div>
+      </div>
+      
+      <!-- Next Workout CTA -->
+      <div class="card-touch bg-crimson rounded-xl p-4 cursor-pointer" onclick="startWorkoutDay('${nextDay.id}')">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-[10px] text-white/60 uppercase tracking-wider font-medium">Next Workout</p>
+            <p class="text-lg font-bold text-white mt-0.5">Day ${nextDay.day}: ${nextDay.name}</p>
+            <p class="text-[12px] text-white/80 mt-1">${nextDay.exercises.length} exercises · ~40 min</p>
+          </div>
+          <div class="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Stall Alerts -->
+      ${stalledExercises.length > 0 ? `
+        <div>
+          <h2 class="text-xs font-semibold ${textMuted} uppercase tracking-wider mb-2">⚠️ Stall Alerts</h2>
+          <div class="space-y-2">
+            ${stalledExercises.map(s => `
+              <div class="${cardBg} border border-yellow-600/30 rounded-xl p-3 flex items-center gap-3">
+                <div class="w-8 h-8 rounded-lg bg-yellow-600/20 flex items-center justify-center flex-shrink-0">
+                  <span class="text-sm">⚠️</span>
+                </div>
+                <div class="min-w-0">
+                  <p class="text-sm font-medium ${textMain} truncate">${s.name}</p>
+                  <p class="text-xs ${textMuted}">Stuck at ${s.bodyweight ? 'BW' : s.weight + ' lbs'} × ${s.reps} for ${s.sessions}+ sessions</p>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      ` : ''}
+      
+      <!-- Personal Records -->
+      ${prs.length > 0 ? `
+        <div>
+          <h2 class="text-xs font-semibold ${textMuted} uppercase tracking-wider mb-2">🏆 Personal Records</h2>
+          <div class="space-y-2">
+            ${prs.map(pr => `
+              <div class="${cardBg} border rounded-xl p-3 flex items-center justify-between">
+                <div class="min-w-0 flex-1">
+                  <p class="text-sm font-medium ${textMain} truncate">${pr.name}</p>
+                  <p class="text-xs ${textMuted}">${formatDate(pr.date)}</p>
+                </div>
+                <div class="text-right flex-shrink-0 ml-3">
+                  <p class="font-mono text-sm font-bold text-crimson">${pr.bodyweight ? 'BW' : pr.weight + ' lbs'} × ${pr.reps}</p>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      ` : ''}
+      
+      <!-- HIT Principles -->
+      <div>
+        <h2 class="text-xs font-semibold ${textMuted} uppercase tracking-wider mb-2">💡 HIT Principles</h2>
+        <div class="grid grid-cols-2 gap-2">
+          ${[
+            { icon: '🔥', title: 'One Set to Failure', desc: 'Maximum intensity, minimum volume' },
+            { icon: '📈', title: 'Progressive Overload', desc: 'More weight or reps each session' },
+            { icon: '⏱️', title: 'Brief Workouts', desc: '30-45 minutes, no wasted time' },
+            { icon: '🔄', title: 'Full Recovery', desc: 'Train each muscle every 5-7 days' },
+          ].map(p => `
+            <div class="${cardBg} border rounded-xl p-3">
+              <span class="text-lg">${p.icon}</span>
+              <p class="text-xs font-semibold ${textMain} mt-1">${p.title}</p>
+              <p class="text-[10px] ${textMuted} mt-0.5 leading-tight">${p.desc}</p>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+      
+      <!-- Recent Sessions -->
+      ${recentSessions.length > 0 ? `
+        <div>
+          <div class="flex items-center justify-between mb-2">
+            <h2 class="text-xs font-semibold ${textMuted} uppercase tracking-wider">Recent Sessions</h2>
+            <a href="#/history" class="text-xs text-crimson font-medium">View All →</a>
+          </div>
+          <div class="space-y-2">
+            ${recentSessions.map(s => {
+              const wSets = s.exercises.reduce((n, e) => n + (e.skipped ? 0 : e.sets.filter(st => st.type === 'working').length), 0);
+              return `
+                <div class="card-touch ${cardBg} border rounded-xl p-3 cursor-pointer" onclick="navigate('/history/${s.id}')">
+                  <div class="flex items-center justify-between">
+                    <div>
+                      <p class="text-sm font-semibold ${textMain}">${s.planDayName}</p>
+                      <p class="text-xs ${textMuted}">${formatDate(s.date)} · ${s.duration} min · ${wSets} sets</p>
+                    </div>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="${isDark ? '#888' : '#666'}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+                  </div>
+                </div>
+              `;
+            }).join('')}
+          </div>
+        </div>
+      ` : ''}
+    </div>
+  `;
+}
+
+// ============================================================
+// WORKOUT PAGE
+// ============================================================
+
+function renderWorkout(el) {
+  if (activeWorkout) {
+    renderActiveWorkout(el);
+    return;
+  }
+  
+  const plan = getPlan();
+  const nextDay = getNextPlanDay();
+  const cardBg = isDark ? 'bg-[#141414] border-[#222]' : 'bg-white border-[#e5e5e5]';
+  const textMain = isDark ? 'text-white' : 'text-[#1a1a1a]';
+  const textMuted = isDark ? 'text-[#888]' : 'text-[#666]';
+  
+  el.innerHTML = `
+    <div class="page space-y-4 pt-2">
+      <h2 class="text-lg font-bold ${textMain}">Select Training Day</h2>
+      
+      <div class="space-y-3">
+        ${plan.map(day => {
+          const isNext = day.id === nextDay.id;
+          return `
+            <div class="card-touch ${isNext ? 'bg-crimson/10 border-crimson/30' : cardBg} border rounded-xl p-4 cursor-pointer" onclick="toggleDayPreview('${day.id}')">
+              <div class="flex items-center justify-between">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <p class="text-[15px] font-bold ${textMain}">Day ${day.day}: ${day.name}</p>
+                    ${isNext ? '<span class="text-[9px] font-bold bg-crimson text-white px-1.5 py-0.5 rounded-full uppercase">Next</span>' : ''}
+                  </div>
+                  <p class="text-xs ${textMuted} mt-1">${day.exercises.length} exercises · ${day.exercises.reduce((n, e) => n + e.workingSets, 0)} working sets</p>
+                </div>
+                <button onclick="event.stopPropagation(); startWorkoutDay('${day.id}')" class="px-4 py-2 bg-crimson text-white text-xs font-bold rounded-lg min-h-[44px]">
+                  Start
+                </button>
+              </div>
+              
+              <!-- Smart Targets Preview -->
+              <div id="preview-${day.id}" class="hidden mt-3 pt-3 border-t ${isDark ? 'border-[#333]' : 'border-[#ddd]'}">
+                <p class="text-[10px] ${textMuted} uppercase tracking-wider font-semibold mb-2">Smart Targets</p>
+                <div class="space-y-1.5">
+                  ${day.exercises.map(ex => {
+                    const sug = getSuggestion(ex.exerciseId, ex.repRange);
+                    const stalled = isStalled(ex.exerciseId);
+                    return `
+                      <div class="flex items-center justify-between py-1">
+                        <div class="flex items-center gap-2 min-w-0 flex-1">
+                          <span class="text-xs ${textMain} truncate">${getExerciseName(ex.exerciseId)}</span>
+                          ${stalled ? '<span class="text-[8px] bg-yellow-600/20 text-yellow-500 px-1 py-0.5 rounded font-bold flex-shrink-0">STALL</span>' : ''}
+                        </div>
+                        <span class="font-mono text-xs text-crimson font-semibold flex-shrink-0 ml-2">${sug.bodyweight ? 'BW' : sug.weight + '#'} × ${sug.reps}</span>
+                      </div>
+                    `;
+                  }).join('')}
+                </div>
+              </div>
+            </div>
+          `;
+        }).join('')}
+      </div>
+    </div>
+  `;
+}
+
+function toggleDayPreview(dayId) {
+  const preview = document.getElementById(`preview-${dayId}`);
+  if (preview) {
+    preview.classList.toggle('hidden');
+  }
+}
+
+function startWorkoutDay(dayId) {
+  const plan = getPlan();
+  const day = plan.find(d => d.id === dayId);
+  if (!day) return;
+  
+  activeWorkout = {
+    planDayId: day.id,
+    planDayName: day.name,
+    day: day.day,
+    exercises: day.exercises.map(ex => ({
+      ...ex,
+      completed: false,
+      sets: [],
+      skipped: false,
+    })),
+    currentExerciseIndex: 0,
+    startTime: Date.now(),
+    notes: '',
+  };
+  
+  workoutElapsed = 0;
+  startWorkoutTimer();
+  if (getRoute() === '/workout') {
+    router();
+  } else {
+    navigate('/workout');
+  }
+}
+
+function startWorkoutTimer() {
+  if (workoutTimer) clearInterval(workoutTimer);
+  workoutTimer = setInterval(() => {
+    workoutElapsed = Math.floor((Date.now() - activeWorkout.startTime) / 1000);
+    const timerEl = document.getElementById('workoutTimerDisplay');
+    if (timerEl) {
+      timerEl.textContent = formatTime(workoutElapsed);
+    }
+  }, 1000);
+}
+
+function formatTime(seconds) {
+  const m = Math.floor(seconds / 60);
+  const s = seconds % 60;
+  return `${m}:${s.toString().padStart(2, '0')}`;
+}
+
+function renderActiveWorkout(el) {
+  const w = activeWorkout;
+  const completed = w.exercises.filter(e => e.completed || e.skipped).length;
+  const total = w.exercises.length;
+  const progress = Math.round((completed / total) * 100);
+  const current = w.exercises[w.currentExerciseIndex];
+  const cardBg = isDark ? 'bg-[#141414] border-[#222]' : 'bg-white border-[#e5e5e5]';
+  const textMain = isDark ? 'text-white' : 'text-[#1a1a1a]';
+  const textMuted = isDark ? 'text-[#888]' : 'text-[#666]';
+  const inputBg = isDark ? 'bg-[#1a1a1a] border-[#333] text-white' : 'bg-[#f0f0f0] border-[#ddd] text-[#1a1a1a]';
+  
+  if (!current || completed === total) {
+    renderWorkoutSummary(el);
+    return;
+  }
+  
+  const sug = getSuggestion(current.exerciseId, current.repRange);
+  const stalledFlag = isStalled(current.exerciseId);
+  const pr = getPR(current.exerciseId);
+  const lastWarmups = getLastWarmups(current.exerciseId);
+  const planEx = current;
+  
+  // Auto-populate warmup suggestions
+  let warmupSuggestions = [];
+  if (planEx.warmupSets > 0) {
+    if (lastWarmups.length > 0) {
+      warmupSuggestions = lastWarmups.slice(0, planEx.warmupSets);
+    } else {
+      // Auto-generate at 60% and 80%
+      const targetW = sug.weight;
+      if (targetW > 0) {
+        if (planEx.warmupSets >= 2) {
+          warmupSuggestions.push({ weight: Math.round(targetW * 0.6 / 5) * 5, reps: 12 });
+          warmupSuggestions.push({ weight: Math.round(targetW * 0.8 / 5) * 5, reps: 8 });
+        } else {
+          warmupSuggestions.push({ weight: Math.round(targetW * 0.7 / 5) * 5, reps: 10 });
+        }
+      }
+    }
+  }
+  
+  el.innerHTML = `
+    <div class="page space-y-3 pt-1">
+      <!-- Timer & Progress Header -->
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-xs ${textMuted}">Day ${w.day}: ${w.planDayName}</p>
+          <p id="workoutTimerDisplay" class="font-mono text-2xl font-bold text-crimson pulse-ring inline-block rounded-lg px-1">${formatTime(workoutElapsed)}</p>
+        </div>
+        <div class="text-right">
+          <p class="text-xs ${textMuted}">${completed}/${total} exercises</p>
+          <div class="w-24 h-2 ${isDark ? 'bg-[#222]' : 'bg-[#ddd]'} rounded-full mt-1 overflow-hidden">
+            <div class="h-full bg-crimson rounded-full transition-all duration-300" style="width: ${progress}%"></div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Current Exercise -->
+      <div class="${cardBg} border rounded-xl p-4">
+        <div class="flex items-start justify-between mb-2">
+          <div>
+            <div class="flex items-center gap-2 flex-wrap">
+              <h3 class="text-base font-bold ${textMain}">${getExerciseName(current.exerciseId)}</h3>
+              ${stalledFlag ? '<span class="text-[9px] bg-yellow-600/20 text-yellow-500 px-1.5 py-0.5 rounded font-bold">STALLED</span>' : ''}
+              ${pr ? '<span class="text-[9px] bg-crimson/20 text-crimson px-1.5 py-0.5 rounded font-bold">PR: ' + (pr.bodyweight ? 'BW' : pr.weight + '#') + '×' + pr.reps + '</span>' : ''}
+            </div>
+            <p class="text-xs ${textMuted} mt-0.5">Target: ${current.repRange[0]}-${current.repRange[1]} reps · ${current.warmupSets} WU / ${current.workingSets} WS</p>
+          </div>
+          <button onclick="skipExercise()" class="text-xs ${textMuted} px-2 py-1 rounded border ${isDark ? 'border-[#333]' : 'border-[#ddd]'} min-h-[32px]">Skip</button>
+        </div>
+        ${current.notes ? `<p class="text-[11px] ${textMuted} italic mb-3">${current.notes}</p>` : ''}
+        
+        <!-- Smart Target Card -->
+        <div class="${isDark ? 'bg-crimson/10 border-crimson/20' : 'bg-crimson/5 border-crimson/20'} border rounded-lg p-3 mb-3">
+          <div class="flex items-center gap-2 mb-1">
+            <span class="text-xs">🎯</span>
+            <span class="text-[10px] font-bold text-crimson uppercase tracking-wider">Smart Target</span>
+          </div>
+          <p class="font-mono text-sm font-bold ${textMain}">${sug.bodyweight ? 'BW' : sug.weight + ' lbs'} × ${sug.reps} reps</p>
+          <p class="text-[11px] ${textMuted} mt-0.5">${sug.reasoning}</p>
+        </div>
+        
+        <!-- Warmup Sets -->
+        ${planEx.warmupSets > 0 ? `
+          <div class="mb-3">
+            <p class="text-[10px] ${textMuted} uppercase tracking-wider font-semibold mb-2">Warmup Sets</p>
+            ${Array.from({ length: planEx.warmupSets }, (_, i) => {
+              const ws = warmupSuggestions[i];
+              return `
+                <div class="flex items-center gap-2 mb-2">
+                  <span class="text-[10px] ${textMuted} w-6 flex-shrink-0">W${i + 1}</span>
+                  <input type="number" id="wu-weight-${i}" class="input-bg ${inputBg} border rounded-lg px-3 py-2 w-20 text-center font-mono text-sm" value="${ws ? ws.weight : ''}" placeholder="lbs">
+                  <span class="text-xs ${textMuted}">×</span>
+                  <input type="number" id="wu-reps-${i}" class="input-bg ${inputBg} border rounded-lg px-3 py-2 w-16 text-center font-mono text-sm" value="${ws ? ws.reps : ''}" placeholder="reps">
+                </div>
+              `;
+            }).join('')}
+          </div>
+        ` : ''}
+        
+        <!-- Working Set -->
+        <div class="mb-3">
+          <p class="text-[10px] ${textMuted} uppercase tracking-wider font-semibold mb-2">Working Set (to failure)</p>
+          <div class="flex items-center gap-2">
+            <span class="text-[10px] text-crimson font-bold w-6 flex-shrink-0">WS</span>
+            <input type="number" id="ws-weight-0" class="input-bg ${inputBg} border rounded-lg px-3 py-2.5 w-20 text-center font-mono text-sm font-bold" value="${sug.bodyweight ? 0 : sug.weight}" placeholder="lbs">
+            <span class="text-xs ${textMuted}">×</span>
+            <input type="number" id="ws-reps-0" class="input-bg ${inputBg} border rounded-lg px-3 py-2.5 w-16 text-center font-mono text-sm font-bold" placeholder="${sug.reps}">
+          </div>
+          ${sug.bodyweight ? `<p class="text-[10px] ${textMuted} mt-1 ml-8">Bodyweight — enter 0 for weight</p>` : ''}
+        </div>
+        
+        <!-- Log Button -->
+        <button onclick="logExercise()" class="w-full py-3 bg-crimson text-white font-bold rounded-xl text-sm min-h-[48px] active:bg-crimson/80 transition-colors">
+          Log & Continue →
+        </button>
+      </div>
+      
+      <!-- Completed Exercises -->
+      ${completed > 0 ? `
+        <div>
+          <p class="text-[10px] ${textMuted} uppercase tracking-wider font-semibold mb-2">Completed (${completed})</p>
+          <div class="space-y-1.5">
+            ${w.exercises.filter(e => e.completed || e.skipped).map(e => `
+              <div class="${cardBg} border rounded-lg p-2.5 flex items-center justify-between">
+                <div class="flex items-center gap-2 min-w-0">
+                  <span class="${e.skipped ? 'text-yellow-500' : 'text-green-500'} text-xs">${e.skipped ? '⏭️' : '✅'}</span>
+                  <span class="text-xs ${textMain} truncate">${getExerciseName(e.exerciseId)}</span>
+                </div>
+                ${!e.skipped && e.sets.length > 0 ? `
+                  <span class="font-mono text-[11px] text-crimson font-semibold flex-shrink-0 ml-2">
+                    ${e.sets.filter(s => s.type === 'working').map(s => `${formatWeight(s)} × ${s.reps}`).join(', ')}
+                  </span>
+                ` : ''}
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      ` : ''}
+      
+      <!-- Session Notes -->
+      <div class="${cardBg} border rounded-xl p-3">
+        <p class="text-[10px] ${textMuted} uppercase tracking-wider font-semibold mb-1.5">Session Notes</p>
+        <textarea id="sessionNotes" class="input-bg ${inputBg} border rounded-lg w-full p-2.5 text-sm resize-none" rows="2" placeholder="How are you feeling?">${w.notes || ''}</textarea>
+      </div>
+      
+      <!-- Cancel -->
+      <button onclick="cancelWorkout()" class="w-full py-2 text-xs ${textMuted} text-center">Cancel Workout</button>
+    </div>
+  `;
+}
+
+function logExercise() {
+  const current = activeWorkout.exercises[activeWorkout.currentExerciseIndex];
+  const planEx = current;
+  const sets = [];
+  
+  // Gather warmup sets
+  for (let i = 0; i < planEx.warmupSets; i++) {
+    const wEl = document.getElementById(`wu-weight-${i}`);
+    const rEl = document.getElementById(`wu-reps-${i}`);
+    if (wEl && rEl && (wEl.value || rEl.value)) {
+      sets.push({ type: 'warmup', weight: parseFloat(wEl.value) || 0, reps: parseInt(rEl.value) || 0 });
+    }
+  }
+  
+  // Gather working set
+  const wsW = document.getElementById('ws-weight-0');
+  const wsR = document.getElementById('ws-reps-0');
+  if (wsW && wsR) {
+    const weight = parseFloat(wsW.value) || 0;
+    const reps = parseInt(wsR.value) || 0;
+    if (reps > 0) {
+      sets.push({
+        type: 'working',
+        weight: weight,
+        reps: reps,
+        toFailure: true,
+        bodyweight: weight === 0,
+      });
+    }
+  }
+  
+  // Save notes
+  const notesEl = document.getElementById('sessionNotes');
+  if (notesEl) activeWorkout.notes = notesEl.value;
+  
+  current.sets = sets;
+  current.completed = true;
+  
+  // Move to next
+  const nextIdx = activeWorkout.exercises.findIndex((e, i) => i > activeWorkout.currentExerciseIndex && !e.completed && !e.skipped);
+  if (nextIdx >= 0) {
+    activeWorkout.currentExerciseIndex = nextIdx;
+    // Show rest timer
+    showRestTimer(current.rest || 90);
+  } else {
+    activeWorkout.currentExerciseIndex = activeWorkout.exercises.length;
+  }
+  
+  renderActiveWorkout(document.getElementById('main'));
+}
+
+function skipExercise() {
+  const current = activeWorkout.exercises[activeWorkout.currentExerciseIndex];
+  current.skipped = true;
+  current.sets = [];
+  
+  const nextIdx = activeWorkout.exercises.findIndex((e, i) => i > activeWorkout.currentExerciseIndex && !e.completed && !e.skipped);
+  if (nextIdx >= 0) {
+    activeWorkout.currentExerciseIndex = nextIdx;
+  } else {
+    activeWorkout.currentExerciseIndex = activeWorkout.exercises.length;
+  }
+  
+  renderActiveWorkout(document.getElementById('main'));
+}
+
+function showRestTimer(seconds) {
+  restSeconds = seconds;
+  const overlay = document.getElementById('restOverlay');
+  overlay.classList.remove('hidden');
+  overlay.style.display = 'flex';
+  
+  updateRestDisplay();
+  
+  restTimer = setInterval(() => {
+    restSeconds--;
+    if (restSeconds <= 0) {
+      skipRest();
+      return;
+    }
+    updateRestDisplay();
+  }, 1000);
+}
+
+function updateRestDisplay() {
+  const el = document.getElementById('restTime');
+  if (el) {
+    const m = Math.floor(restSeconds / 60);
+    const s = restSeconds % 60;
+    el.textContent = `${m}:${s.toString().padStart(2, '0')}`;
+  }
+}
+
+function skipRest() {
+  if (restTimer) clearInterval(restTimer);
+  restTimer = null;
+  const overlay = document.getElementById('restOverlay');
+  overlay.classList.add('hidden');
+  overlay.style.display = 'none';
+}
+
+function cancelWorkout() {
+  if (!confirm('Cancel this workout? All logged data will be lost.')) return;
+  if (workoutTimer) clearInterval(workoutTimer);
+  workoutTimer = null;
+  activeWorkout = null;
+  navigate('/workout');
+}
+
+function renderWorkoutSummary(el) {
+  const w = activeWorkout;
+  const duration = Math.round((Date.now() - w.startTime) / 60000);
+  const wSets = w.exercises.filter(e => e.completed).reduce((n, e) => n + e.sets.filter(s => s.type === 'working').length, 0);
+  const cardBg = isDark ? 'bg-[#141414] border-[#222]' : 'bg-white border-[#e5e5e5]';
+  const textMain = isDark ? 'text-white' : 'text-[#1a1a1a]';
+  const textMuted = isDark ? 'text-[#888]' : 'text-[#666]';
+  
+  el.innerHTML = `
+    <div class="page space-y-4 pt-2 text-center">
+      <div class="py-4">
+        <p class="text-4xl mb-2">💪</p>
+        <h2 class="text-xl font-bold ${textMain}">Workout Complete!</h2>
+        <p class="text-sm ${textMuted} mt-1">${w.planDayName} · ${duration} min · ${wSets} working sets</p>
+      </div>
+      
+      <div class="space-y-2 text-left">
+        ${w.exercises.map(e => `
+          <div class="${cardBg} border rounded-xl p-3">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2 min-w-0">
+                <span class="${e.skipped ? 'text-yellow-500' : 'text-green-500'} text-xs">${e.skipped ? '⏭️' : '✅'}</span>
+                <span class="text-sm font-medium ${textMain} truncate">${getExerciseName(e.exerciseId)}</span>
+              </div>
+              ${!e.skipped ? `
+                <span class="font-mono text-xs text-crimson font-semibold flex-shrink-0 ml-2">
+                  ${e.sets.filter(s => s.type === 'working').map(s => `${formatWeight(s)} × ${s.reps}`).join(', ') || '—'}
+                </span>
+              ` : '<span class="text-xs text-yellow-500 flex-shrink-0">Skipped</span>'}
+            </div>
+          </div>
+        `).join('')}
+      </div>
+      
+      <button onclick="saveWorkout()" class="w-full py-3.5 bg-crimson text-white font-bold rounded-xl text-sm min-h-[48px]">
+        Save Workout
+      </button>
+      <button onclick="discardWorkout()" class="w-full py-2 text-xs ${textMuted}">Discard</button>
+    </div>
+  `;
+}
+
+function saveWorkout() {
+  const w = activeWorkout;
+  const duration = Math.round((Date.now() - w.startTime) / 60000);
+  const today = new Date().toISOString().split('T')[0];
+  
+  const session = {
+    id: 's' + Date.now(),
+    planDayId: w.planDayId,
+    planDayName: w.planDayName,
+    date: today,
+    duration: duration || 1,
+    notes: w.notes || '',
+    exercises: w.exercises.map(e => ({
+      exerciseId: e.exerciseId,
+      skipped: e.skipped || false,
+      sets: e.sets || [],
+    })),
+  };
+  
+  const sessions = getSessions();
+  sessions.push(session);
+  saveSessions(sessions);
+  
+  if (workoutTimer) clearInterval(workoutTimer);
+  workoutTimer = null;
+  activeWorkout = null;
+  
+  navigate('/history/' + session.id);
+}
+
+function discardWorkout() {
+  if (!confirm('Discard this workout?')) return;
+  if (workoutTimer) clearInterval(workoutTimer);
+  workoutTimer = null;
+  activeWorkout = null;
+  navigate('/');
+}
+
+// ============================================================
+// COACH PAGE
+// ============================================================
+
+let chatMessages = [];
+
+function renderCoach(el) {
+  const cardBg = isDark ? 'bg-[#141414] border-[#222]' : 'bg-white border-[#e5e5e5]';
+  const textMain = isDark ? 'text-white' : 'text-[#1a1a1a]';
+  const textMuted = isDark ? 'text-[#888]' : 'text-[#666]';
+  const inputBg = isDark ? 'bg-[#1a1a1a] border-[#333] text-white' : 'bg-[#f0f0f0] border-[#ddd] text-[#1a1a1a]';
+  
+  if (chatMessages.length === 0) {
+    chatMessages.push({
+      role: 'bot',
+      text: "I'm your HIT Coach — Dorian Yates style. I analyze your training data to give you real advice. Tap a quick prompt or type your question below.",
+    });
+  }
+  
+  el.innerHTML = `
+    <div class="page flex flex-col" style="height: calc(100dvh - 130px);">
+      <!-- Quick Prompts -->
+      <div class="flex gap-2 overflow-x-auto pb-2 pt-1 scrollbar-hide flex-shrink-0" style="scrollbar-width: none; -ms-overflow-style: none;">
+        ${[
+          { label: "What should I do today?", key: 'today' },
+          { label: "Break through a stall", key: 'stall' },
+          { label: "Swap incline curls", key: 'swap' },
+          { label: "Review my progress", key: 'progress' },
+        ].map(p => `
+          <button onclick="coachPrompt('${p.key}')" class="${isDark ? 'bg-[#1a1a1a] border-[#333]' : 'bg-white border-[#ddd]'} border rounded-full px-3 py-2 text-[11px] font-medium ${textMain} whitespace-nowrap flex-shrink-0 min-h-[36px]">
+            ${p.label}
+          </button>
+        `).join('')}
+      </div>
+      
+      <!-- Chat Messages -->
+      <div id="chatContainer" class="flex-1 overflow-y-auto space-y-3 py-2">
+        ${chatMessages.map(m => renderChatBubble(m)).join('')}
+      </div>
+      
+      <!-- Input -->
+      <div class="flex gap-2 pt-2 pb-1 flex-shrink-0">
+        <input type="text" id="coachInput" class="input-bg ${inputBg} border rounded-xl flex-1 px-4 py-3 text-sm" placeholder="Ask your coach..." onkeydown="if(event.key==='Enter')coachSend()">
+        <button onclick="coachSend()" class="w-12 h-12 bg-crimson text-white rounded-xl flex items-center justify-center flex-shrink-0">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+        </button>
+      </div>
+    </div>
+  `;
+  
+  // Scroll to bottom
+  setTimeout(() => {
+    const container = document.getElementById('chatContainer');
+    if (container) container.scrollTop = container.scrollHeight;
+  }, 50);
+}
+
+function renderChatBubble(msg) {
+  const textMain = isDark ? 'text-white' : 'text-[#1a1a1a]';
+  if (msg.role === 'bot') {
+    return `
+      <div class="flex gap-2 items-start">
+        <div class="w-7 h-7 rounded-full bg-crimson flex items-center justify-center flex-shrink-0 mt-0.5">
+          <span class="text-white text-xs font-bold">DY</span>
+        </div>
+        <div class="chat-bot ${isDark ? 'bg-[#1a1a1a]' : 'bg-white'} px-3 py-2.5 max-w-[85%]">
+          <p class="text-[13px] ${textMain} leading-relaxed whitespace-pre-wrap">${msg.text}</p>
+        </div>
+      </div>
+    `;
+  } else {
+    return `
+      <div class="flex justify-end">
+        <div class="chat-user bg-crimson px-3 py-2.5 max-w-[85%]">
+          <p class="text-[13px] text-white leading-relaxed">${msg.text}</p>
+        </div>
+      </div>
+    `;
+  }
+}
+
+function coachPrompt(key) {
+  const labels = {
+    today: "What should I do today?",
+    stall: "How do I break through a stall?",
+    swap: "Swap out incline curls",
+    progress: "Review my recent progress",
+  };
+  
+  chatMessages.push({ role: 'user', text: labels[key] });
+  
+  let response = '';
+  
+  if (key === 'today') {
+    const next = getNextPlanDay();
+    const lines = [`Today is Day ${next.day}: ${next.name}. Here's your targets:\n`];
+    for (const ex of next.exercises) {
+      const sug = getSuggestion(ex.exerciseId, ex.repRange);
+      const st = isStalled(ex.exerciseId) ? ' ⚠️ STALLED' : '';
+      const sugW = (sug.bodyweight || sug.weight === 0) ? 'BW' : sug.weight + ' lbs';
+      lines.push(`• ${getExerciseName(ex.exerciseId)}: ${sugW} × ${sug.reps} reps${st}`);
+    }
+    lines.push(`\nRemember: one working set to absolute failure. Control the negative. No ego lifting.`);
+    response = lines.join('\n');
+  } else if (key === 'stall') {
+    const stalled = getStalledExercises();
+    if (stalled.length === 0) {
+      response = "Great news — none of your exercises are currently stalled! You're progressing across the board. Keep pushing for that extra rep each session.";
+    } else {
+      const lines = [`You have ${stalled.length} stalled exercise${stalled.length > 1 ? 's' : ''}:\n`];
+      for (const s of stalled) {
+        lines.push(`⚠️ ${s.name} — stuck at ${s.bodyweight ? 'BW' : s.weight + ' lbs'} × ${s.reps}`);
+      }
+      lines.push(`\nHIT strategies to break through:`);
+      lines.push(`1. Slower negatives (4-5 seconds down)`);
+      lines.push(`2. Rest-pause: hit failure, rest 10s, squeeze out 2-3 more`);
+      lines.push(`3. Forced negatives: have a partner help you lift, lower on your own`);
+      lines.push(`4. Pre-exhaust: do an isolation set before the compound`);
+      lines.push(`5. Swap the exercise for a variation (keeps the muscle guessing)`);
+      response = lines.join('\n');
+    }
+  } else if (key === 'swap') {
+    response = `For incline curls, I'd recommend swapping to one of these:\n\n1. Standing DB Curls — already in your plan, great for overall bicep development\n2. Concentration Curls — isolates the peak, easier on the shoulder joint\n\n⚠️ Given your shoulder cuff concerns, AVOID:\n• Heavy barbell curls with momentum\n• Behind-the-back cable curls\n• Any curl variation that puts the shoulder in extreme extension\n\nConcentration curls are your safest bet — seated, elbow braced on inner thigh, pure isolation. Start with 15-20 lbs for 8-12 reps.`;
+  } else if (key === 'progress') {
+    const sessions = getSessions().sort((a, b) => new Date(b.date) - new Date(a.date));
+    const recent = sessions.slice(0, 5);
+    const lines = [`Here's your last ${recent.length} sessions:\n`];
+    for (const s of recent) {
+      const wSets = s.exercises.reduce((n, e) => n + (e.skipped ? 0 : e.sets.filter(st => st.type === 'working').length), 0);
+      lines.push(`📅 ${formatDate(s.date)} — ${s.planDayName} (${s.duration} min, ${wSets} sets)`);
+    }
+    
+    // Check for recent PRs
+    const prs = getAllPRs().slice(0, 3);
+    if (prs.length > 0) {
+      lines.push(`\n🏆 Recent PRs:`);
+      for (const pr of prs) {
+        lines.push(`• ${pr.name}: ${pr.bodyweight ? 'BW' : pr.weight + ' lbs'} × ${pr.reps} (${formatDate(pr.date)})`);
+      }
+    }
+    
+    const stalled = getStalledExercises();
+    if (stalled.length > 0) {
+      lines.push(`\n⚠️ ${stalled.length} exercise${stalled.length > 1 ? 's' : ''} stalled — address these next session.`);
+    }
+    
+    lines.push(`\nOverall: solid consistency. Keep the intensity up and the workouts brief.`);
+    response = lines.join('\n');
+  }
+  
+  chatMessages.push({ role: 'bot', text: response });
+  renderCoach(document.getElementById('main'));
+}
+
+function coachSend() {
+  const input = document.getElementById('coachInput');
+  const text = input.value.trim();
+  if (!text) return;
+  
+  chatMessages.push({ role: 'user', text });
+  
+  // Keyword matching
+  const lower = text.toLowerCase();
+  let response = '';
+  
+  if (lower.includes('today') || lower.includes('next') || lower.includes('what should')) {
+    coachPrompt('today');
+    return;
+  } else if (lower.includes('stall') || lower.includes('plateau') || lower.includes('stuck') || lower.includes('break through')) {
+    coachPrompt('stall');
+    return;
+  } else if (lower.includes('swap') || lower.includes('replace') || lower.includes('incline curl') || lower.includes('alternative')) {
+    coachPrompt('swap');
+    return;
+  } else if (lower.includes('progress') || lower.includes('review') || lower.includes('how am i') || lower.includes('recent')) {
+    coachPrompt('progress');
+    return;
+  } else if (lower.includes('rest') || lower.includes('recovery')) {
+    response = "In HIT, recovery is just as important as the training. Rest at least 48 hours between sessions hitting the same muscle group. Sleep 7-9 hours. Eat sufficient protein (0.8-1g per pound bodyweight). If you're not recovering, you won't grow — Dorian trained each body part once per week.";
+  } else if (lower.includes('diet') || lower.includes('protein') || lower.includes('eat') || lower.includes('nutrition')) {
+    response = "For HIT training, aim for:\n• Protein: 0.8-1g per pound bodyweight\n• Eat in a slight surplus for muscle gain, deficit for fat loss\n• Pre-workout meal 1-2 hours before training\n• Post-workout: protein + carbs within 1 hour\n• Stay hydrated — at least 1 gallon of water daily";
+  } else if (lower.includes('failure') || lower.includes('intensity')) {
+    response = "Dorian's rule: the working set should be ABSOLUTE muscular failure. Not 'it hurts' failure — 'I literally cannot move this weight one more inch' failure. That's where the magic happens. If you're not failing, you're not training hard enough. One set of true failure beats 10 sets of going through the motions.";
+  } else if (lower.includes('warm') || lower.includes('warmup')) {
+    response = "Warmup protocol:\n1. First warmup: ~60% of working weight, 12 reps (NOT to failure)\n2. Second warmup: ~80% of working weight, 6-8 reps (NOT to failure)\n\nWarmups prepare the joint and muscle, they DON'T fatigue you. Save everything for the working set.";
+  } else {
+    response = "I can help with:\n• Training recommendations ('What should I do today?')\n• Breaking through plateaus ('How do I break a stall?')\n• Exercise swaps ('Swap incline curls')\n• Progress reviews ('Review my progress')\n• Recovery, nutrition, and HIT principles\n\nTry one of these topics or tap a quick prompt above!";
+  }
+  
+  chatMessages.push({ role: 'bot', text: response });
+  renderCoach(document.getElementById('main'));
+}
+
+// ============================================================
+// HISTORY PAGE
+// ============================================================
+
+function renderHistory(el) {
+  const sessions = getSessions().sort((a, b) => new Date(b.date) - new Date(a.date));
+  const cardBg = isDark ? 'bg-[#141414] border-[#222]' : 'bg-white border-[#e5e5e5]';
+  const textMain = isDark ? 'text-white' : 'text-[#1a1a1a]';
+  const textMuted = isDark ? 'text-[#888]' : 'text-[#666]';
+  
+  el.innerHTML = `
+    <div class="page space-y-3 pt-2">
+      <h2 class="text-lg font-bold ${textMain}">Training History</h2>
+      <p class="text-xs ${textMuted}">${sessions.length} total sessions</p>
+      
+      ${sessions.length === 0 ? `
+        <div class="text-center py-12">
+          <p class="text-3xl mb-2">🏋️</p>
+          <p class="${textMuted} text-sm">No sessions yet. Start your first workout!</p>
+        </div>
+      ` : ''}
+      
+      <div class="space-y-2">
+        ${sessions.map(s => {
+          const wSets = s.exercises.reduce((n, e) => n + (e.skipped ? 0 : e.sets.filter(st => st.type === 'working').length), 0);
+          return `
+            <div class="card-touch ${cardBg} border rounded-xl p-4 cursor-pointer" onclick="navigate('/history/${s.id}')">
+              <div class="flex items-center justify-between">
+                <div>
+                  <p class="text-[15px] font-semibold ${textMain}">${s.planDayName}</p>
+                  <div class="flex items-center gap-3 mt-1">
+                    <span class="text-xs ${textMuted}">${formatDate(s.date)}</span>
+                    <span class="text-xs ${textMuted}">${s.duration} min</span>
+                    <span class="font-mono text-xs text-crimson font-semibold">${wSets} sets</span>
+                  </div>
+                </div>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="${isDark ? '#666' : '#999'}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+              </div>
+            </div>
+          `;
+        }).join('')}
+      </div>
+    </div>
+  `;
+}
+
+// ============================================================
+// SESSION DETAIL PAGE
+// ============================================================
+
+function renderSessionDetail(el, id) {
+  const sessions = getSessions();
+  const session = sessions.find(s => s.id === id);
+  const cardBg = isDark ? 'bg-[#141414] border-[#222]' : 'bg-white border-[#e5e5e5]';
+  const textMain = isDark ? 'text-white' : 'text-[#1a1a1a]';
+  const textMuted = isDark ? 'text-[#888]' : 'text-[#666]';
+  
+  if (!session) {
+    el.innerHTML = `<div class="page text-center py-20"><p class="${textMuted}">Session not found</p></div>`;
+    return;
+  }
+  
+  el.innerHTML = `
+    <div class="page space-y-3 pt-2">
+      <!-- Back -->
+      <button onclick="navigate('/history')" class="flex items-center gap-1 text-crimson text-sm font-medium min-h-[44px]">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+        History
+      </button>
+      
+      <!-- Header -->
+      <div>
+        <h2 class="text-xl font-bold ${textMain}">${session.planDayName}</h2>
+        <div class="flex items-center gap-3 mt-1">
+          <span class="text-sm ${textMuted}">${formatDate(session.date)}</span>
+          <span class="text-sm ${textMuted}">${session.duration} min</span>
+        </div>
+      </div>
+      
+      ${session.notes ? `<p class="text-sm ${textMuted} italic">${session.notes}</p>` : ''}
+      
+      <!-- Exercises -->
+      <div class="space-y-3">
+        ${session.exercises.map(ex => {
+          const warmups = ex.sets ? ex.sets.filter(s => s.type === 'warmup') : [];
+          const working = ex.sets ? ex.sets.filter(s => s.type === 'working') : [];
+          
+          return `
+            <div class="${cardBg} border rounded-xl p-4">
+              <div class="flex items-center justify-between mb-2">
+                <h3 class="text-sm font-bold ${textMain}">${getExerciseName(ex.exerciseId)}</h3>
+                ${ex.skipped ? '<span class="text-[10px] bg-yellow-600/20 text-yellow-500 px-2 py-0.5 rounded-full font-bold">SKIPPED</span>' : ''}
+              </div>
+              
+              ${!ex.skipped ? `
+                ${warmups.length > 0 ? `
+                  <div class="mb-2">
+                    <p class="text-[10px] ${textMuted} uppercase tracking-wider mb-1">Warmup</p>
+                    ${warmups.map(s => `
+                      <p class="font-mono text-xs ${textMuted}">${formatWeight(s)} × ${s.reps}</p>
+                    `).join('')}
+                  </div>
+                ` : ''}
+                ${working.length > 0 ? `
+                  <div>
+                    <p class="text-[10px] text-crimson uppercase tracking-wider font-semibold mb-1">Working Set</p>
+                    ${working.map(s => `
+                      <p class="font-mono text-sm font-bold ${textMain}">${formatWeight(s)} × ${s.reps} <span class="text-[10px] ${textMuted} font-normal">to failure</span></p>
+                    `).join('')}
+                  </div>
+                ` : ''}
+              ` : `
+                <p class="text-xs ${textMuted}">Exercise was skipped this session</p>
+              `}
+            </div>
+          `;
+        }).join('')}
+      </div>
+    </div>
+  `;
+}
+
+// ============================================================
+// PLAN PAGE
+// ============================================================
+
+function renderPlan(el) {
+  const plan = getPlan();
+  const cardBg = isDark ? 'bg-[#141414] border-[#222]' : 'bg-white border-[#e5e5e5]';
+  const textMain = isDark ? 'text-white' : 'text-[#1a1a1a]';
+  const textMuted = isDark ? 'text-[#888]' : 'text-[#666]';
+  
+  el.innerHTML = `
+    <div class="page space-y-3 pt-2">
+      <h2 class="text-lg font-bold ${textMain}">4-Day Training Plan</h2>
+      <p class="text-xs ${textMuted}">Dorian Yates Blood & Guts — HIT Protocol</p>
+      
+      <div class="space-y-3">
+        ${plan.map(day => `
+          <div class="${cardBg} border rounded-xl overflow-hidden">
+            <button onclick="togglePlanDay('plan-${day.id}')" class="w-full p-4 flex items-center justify-between text-left min-h-[56px]">
+              <div>
+                <p class="text-[15px] font-bold ${textMain}">Day ${day.day}: ${day.name}</p>
+                <p class="text-xs ${textMuted} mt-0.5">${day.exercises.length} exercises · ${day.exercises.reduce((n, e) => n + e.warmupSets, 0)} WU / ${day.exercises.reduce((n, e) => n + e.workingSets, 0)} WS</p>
+              </div>
+              <svg id="chevron-plan-${day.id}" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="${isDark ? '#888' : '#666'}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="transition-transform"><polyline points="6 9 12 15 18 9"/></svg>
+            </button>
+            
+            <div id="plan-${day.id}" class="hidden border-t ${isDark ? 'border-[#222]' : 'border-[#e5e5e5]'}">
+              ${day.exercises.map((ex, i) => `
+                <div class="p-3 ${i > 0 ? 'border-t ' + (isDark ? 'border-[#1a1a1a]' : 'border-[#f0f0f0]') : ''}">
+                  <div class="flex items-center justify-between mb-1">
+                    <p class="text-sm font-semibold ${textMain}">${getExerciseName(ex.exerciseId)}</p>
+                    <span class="font-mono text-[11px] text-crimson font-semibold">${ex.repRange[0]}-${ex.repRange[1]} reps</span>
+                  </div>
+                  <div class="flex items-center gap-3 text-[11px] ${textMuted}">
+                    <span>${ex.warmupSets} warmup${ex.warmupSets !== 1 ? 's' : ''}</span>
+                    <span>${ex.workingSets} working</span>
+                    <span>Rest ${ex.rest}s</span>
+                  </div>
+                  ${ex.notes ? `<p class="text-[11px] ${textMuted} italic mt-1">${ex.notes}</p>` : ''}
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  `;
+}
+
+function togglePlanDay(id) {
+  const el = document.getElementById(id);
+  const chevron = document.getElementById('chevron-' + id);
+  if (el) {
+    el.classList.toggle('hidden');
+    if (chevron) {
+      chevron.style.transform = el.classList.contains('hidden') ? '' : 'rotate(180deg)';
+    }
+  }
+}
+
+// ============================================================
+// INITIALIZATION
+// ============================================================
+
+function init() {
+  seedData();
+  initTheme();
+  router();
+  window.addEventListener('hashchange', router);
+}
+
+// Register service worker for PWA
+if ('serviceWorker' in navigator) {
+  // Minimal inline SW not needed for static deploy — manifest handles install prompt
+}
+
+init();
+</script>
+
+<!-- Attribution Footer -->
+<div style="text-align: center; padding: 12px 16px 100px;">
+  <a href="https://www.perplexity.ai/computer" target="_blank" rel="noopener noreferrer" style="color: #666; font-size: 11px; text-decoration: none;">
+    Created with Perplexity Computer
+  </a>
+</div>
+
+</body>
+</html>
