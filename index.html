@@ -85,6 +85,91 @@ tailwind.config = {
     background-size: 40px 40px;
   }
 
+  /* Hero banner — Dorian Yates Training Journal COVER recreation */
+  .hero-cover {
+    position: relative;
+    background: linear-gradient(135deg, #8b1a1a 0%, #c42b2b 40%, #a01f1f 100%);
+    padding: 20px 16px 24px;
+    margin: -16px -16px 16px -16px;
+    overflow: hidden;
+  }
+  .hero-cover::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background-image:
+      linear-gradient(rgba(255,255,255,0.12) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.12) 1px, transparent 1px);
+    background-size: 24px 24px;
+    z-index: 1;
+  }
+  .hero-cover::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(0,0,0,0.1) 0%, transparent 30%, transparent 70%, rgba(0,0,0,0.3) 100%);
+    pointer-events: none;
+    z-index: 2;
+  }
+  .hero-figure {
+    position: absolute;
+    right: -10px;
+    top: 8px;
+    width: 240px;
+    height: 300px;
+    opacity: 0.5;
+    z-index: 1;
+  }
+  .hero-content {
+    position: relative;
+    z-index: 3;
+  }
+  .hero-top-bar {
+    background: rgba(0,0,0,0.7);
+    padding: 6px 12px;
+    margin: -20px -16px 16px -16px;
+    text-align: center;
+  }
+  .hero-top-bar span {
+    font-family: 'Oswald', sans-serif;
+    font-weight: 400;
+    font-size: 9px;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.9);
+  }
+  .hero-top-bar strong {
+    font-weight: 700;
+  }
+  .hero-title {
+    font-family: 'Oswald', sans-serif;
+    font-weight: 700;
+    font-size: 42px;
+    letter-spacing: -0.01em;
+    line-height: 0.9;
+    color: #fff;
+    text-transform: uppercase;
+    text-shadow: 2px 2px 8px rgba(0,0,0,0.4);
+  }
+  .hero-bar {
+    display: inline-block;
+    background: #000;
+    padding: 5px 16px;
+    margin-top: 6px;
+  }
+  .hero-bar span {
+    font-family: 'Oswald', sans-serif;
+    font-weight: 600;
+    font-size: 14px;
+    letter-spacing: 0.35em;
+    color: #fff;
+    text-transform: uppercase;
+  }
+  body.light-mode .hero-cover {
+    background: linear-gradient(135deg, #8b1a1a 0%, #c42b2b 40%, #a01f1f 100%);
+  }
+
   .font-mono { font-family: 'JetBrains Mono', monospace; }
   .font-display { font-family: 'Oswald', sans-serif; }
 
@@ -799,6 +884,13 @@ function router() {
   const route = getRoute();
   const main = document.getElementById('main');
   updateNav();
+  // Hide header on dashboard (hero replaces it)
+  const header = document.getElementById('header');
+  if (route === '/' || route === '') {
+    header.style.display = 'none';
+  } else {
+    header.style.display = '';
+  }
 
   if (route === '/' || route === '') {
     renderDashboard(main);
@@ -839,7 +931,115 @@ function renderDashboard(el) {
   const quote = DORIAN_QUOTES[currentQuoteIndex % DORIAN_QUOTES.length];
 
   el.innerHTML = `
-    <div class="page space-y-4 pt-3">
+    <div class="page space-y-4 pt-0">
+      <!-- HERO COVER — Dorian Yates Training Journal title page recreation -->
+      <div class="hero-cover" style="border-radius:12px;margin:0 0 8px 0;padding:0;">
+        <!-- Top black bar -->
+        <div class="hero-top-bar" style="margin:0;border-radius:12px 12px 0 0;">
+          <span>The official journal of <strong>6 time Mr. Olympia winner</strong></span>
+        </div>
+        <!-- Wireframe bodybuilder SVG figure -->
+        <svg class="hero-figure" viewBox="0 0 200 260" fill="none" stroke="rgba(255,255,255,0.4)" stroke-width="0.8">
+          <!-- Head -->
+          <ellipse cx="100" cy="28" rx="18" ry="22" />
+          <ellipse cx="100" cy="28" rx="14" ry="18" />
+          <line x1="100" y1="20" x2="100" y2="36" />
+          <line x1="92" y1="28" x2="108" y2="28" />
+          <!-- Neck -->
+          <line x1="94" y1="50" x2="94" y2="60" />
+          <line x1="106" y1="50" x2="106" y2="60" />
+          <line x1="90" y1="55" x2="110" y2="55" />
+          <!-- Traps -->
+          <path d="M94 50 Q80 52 60 62" />
+          <path d="M106 50 Q120 52 140 62" />
+          <!-- Shoulders -->
+          <ellipse cx="56" cy="66" rx="14" ry="10" />
+          <ellipse cx="144" cy="66" rx="14" ry="10" />
+          <!-- Chest -->
+          <path d="M68 62 Q100 58 132 62" />
+          <path d="M68 62 Q74 82 100 88" />
+          <path d="M132 62 Q126 82 100 88" />
+          <line x1="100" y1="62" x2="100" y2="110" />
+          <!-- Pec detail -->
+          <path d="M72 68 Q86 78 100 74" />
+          <path d="M128 68 Q114 78 100 74" />
+          <!-- Abs -->
+          <line x1="92" y1="90" x2="108" y2="90" />
+          <line x1="92" y1="98" x2="108" y2="98" />
+          <line x1="92" y1="106" x2="108" y2="106" />
+          <line x1="90" y1="88" x2="90" y2="114" />
+          <line x1="110" y1="88" x2="110" y2="114" />
+          <!-- Left arm -->
+          <path d="M44 68 Q32 80 28 100" />
+          <path d="M56 76 Q46 86 40 100" />
+          <!-- Left bicep curve -->
+          <path d="M44 68 Q38 78 36 88 Q34 94 28 100" />
+          <path d="M56 76 Q50 86 46 94 Q42 98 40 100" />
+          <!-- Left forearm -->
+          <path d="M28 100 Q30 118 38 130" />
+          <path d="M40 100 Q40 116 44 128" />
+          <line x1="28" y1="105" x2="40" y2="105" />
+          <line x1="30" y1="115" x2="42" y2="115" />
+          <!-- Right arm -->
+          <path d="M156 68 Q168 80 172 100" />
+          <path d="M144 76 Q154 86 160 100" />
+          <!-- Right bicep curve -->
+          <path d="M156 68 Q162 78 164 88 Q166 94 172 100" />
+          <path d="M144 76 Q150 86 154 94 Q158 98 160 100" />
+          <!-- Right forearm -->
+          <path d="M172 100 Q170 118 162 130" />
+          <path d="M160 100 Q160 116 156 128" />
+          <line x1="160" y1="105" x2="172" y2="105" />
+          <line x1="158" y1="115" x2="170" y2="115" />
+          <!-- Torso/waist -->
+          <path d="M68 62 L78 114" />
+          <path d="M132 62 L122 114" />
+          <line x1="78" y1="114" x2="122" y2="114" />
+          <!-- Hips -->
+          <path d="M78 114 Q76 124 70 136" />
+          <path d="M122 114 Q124 124 130 136" />
+          <!-- Left leg -->
+          <path d="M70 136 Q64 168 62 200" />
+          <path d="M90 118 Q84 156 78 200" />
+          <!-- Left quad detail -->
+          <path d="M70 140 Q68 160 64 180" />
+          <line x1="66" y1="155" x2="80" y2="155" />
+          <line x1="64" y1="170" x2="78" y2="170" />
+          <line x1="63" y1="185" x2="77" y2="185" />
+          <!-- Left calf -->
+          <path d="M62 200 Q60 220 62 245" />
+          <path d="M78 200 Q76 218 74 245" />
+          <line x1="62" y1="210" x2="78" y2="210" />
+          <line x1="61" y1="225" x2="75" y2="225" />
+          <!-- Right leg -->
+          <path d="M130 136 Q136 168 138 200" />
+          <path d="M110 118 Q116 156 122 200" />
+          <!-- Right quad detail -->
+          <path d="M130 140 Q132 160 136 180" />
+          <line x1="120" y1="155" x2="134" y2="155" />
+          <line x1="122" y1="170" x2="136" y2="170" />
+          <line x1="123" y1="185" x2="137" y2="185" />
+          <!-- Right calf -->
+          <path d="M138 200 Q140 220 138 245" />
+          <path d="M122 200 Q124 218 126 245" />
+          <line x1="122" y1="210" x2="138" y2="210" />
+          <line x1="125" y1="225" x2="139" y2="225" />
+          <!-- Horizontal grid lines across body -->
+          <line x1="44" y1="80" x2="156" y2="80" stroke-opacity="0.15" />
+          <line x1="60" y1="96" x2="140" y2="96" stroke-opacity="0.15" />
+          <line x1="70" y1="130" x2="130" y2="130" stroke-opacity="0.15" />
+          <line x1="62" y1="165" x2="138" y2="165" stroke-opacity="0.15" />
+          <line x1="60" y1="200" x2="140" y2="200" stroke-opacity="0.15" />
+        </svg>
+        <!-- Title content -->
+        <div class="hero-content" style="padding:16px 16px 20px;">
+          <h1 class="hero-title">BLOOD<br>&amp; GUTS</h1>
+          <div class="hero-bar">
+            <span>HIT TRACKER</span>
+          </div>
+        </div>
+      </div>
+
       <!-- Dorian Says Quote -->
       <div class="${cardBg} border rounded-xl overflow-hidden">
         <div class="quote-block pl-6 pr-4 py-3">
